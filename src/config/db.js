@@ -3,7 +3,7 @@
  */
 const Sequelize = require('sequelize');
 
-module.exports = new Sequelize('hltv', 'root', '123456', {
+module.exports = new Sequelize('hltv', 'root', 'root', {
   host: 'localhost', // 数据库地址
   dialect: 'mysql', // 指定连接的数据库类型
   pool: {

@@ -154,7 +154,7 @@ exports.matcheMaps = async () => {
           });
           return MatchModel.count({where: {hltvId: urlsData.url.split('/')[2]}}).then((count) => {
             if(count === 0){
-              MatchModel.create({
+              return MatchModel.create({
                 hltvId: urlsData.url.split('/')[2],
                 date: match.date.toString(),
                 teamId1: match.teamId1,
@@ -170,8 +170,6 @@ exports.matcheMaps = async () => {
                 mapDes: mapDes,
                 mapDetails: JSON.stringify(mapDetails),
                 matchDescription: match.matchDescription
-              }).catch(function (result) {
-                console.log(result);
               });
             }else {
               return MatchModel.update({

@@ -24,6 +24,9 @@ module.exports = function (DB, DataTypes) {
     avatarFile: {
       type: DataTypes.STRING,
     },
+    // players: {
+    //   type: DataTypes.TEXT,
+    // },
     gameType: {
       type: DataTypes.STRING,
     }
