@@ -3,7 +3,7 @@
  */
 module.exports = function (DB, DataTypes) {
   return DB.define('TEAM', {
-    id: {
+    hltvId: {
       type: DataTypes.STRING,
       allowNull: false,
       primaryKey: true,
@@ -15,13 +15,16 @@ module.exports = function (DB, DataTypes) {
     newName: {
       type: DataTypes.STRING,
     },
+    teamUrl: {
+      type: DataTypes.STRING,
+    },
     country: {
       type: DataTypes.STRING,
     },
     avatarFile: {
       type: DataTypes.STRING,
     },
-    hltvId: {
+    gameType: {
       type: DataTypes.STRING,
     }
   }, {

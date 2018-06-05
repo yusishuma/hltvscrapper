@@ -4,13 +4,10 @@
 // "use strict";
 module.exports = function (DB, DataTypes) {
   return DB.define('MATCH', {
-    tourId: {
+    hltvId: {
       type: DataTypes.STRING,
       primaryKey: true,
       allowNull: false,
-    },
-    hltvId: {
-      type: DataTypes.STRING,
     },
     date: {
       type: DataTypes.STRING,
@@ -26,42 +23,31 @@ module.exports = function (DB, DataTypes) {
     },
     team1Score: {
       type: DataTypes.STRING,
-      allowNull: false,
     },
     team2Score: {
       type: DataTypes.STRING,
-      allowNull: false,
     },
     bo: {
       type: DataTypes.STRING,
-      allowNull: false,
-    },
-    team1Wins: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    team2Wins: {
-      type: DataTypes.STRING,
-      allowNull: false,
     },
     team1PastMatch: {
       type: DataTypes.TEXT,
-      allowNull: false,
     },
     team2PastMatch: {
       type: DataTypes.TEXT,
-      allowNull: false,
     },
     status: {
       type: DataTypes.STRING,
     },
-    tournamentName: {
+    leagueId: {
+      type: DataTypes.STRING,
+    },
+    leagueName: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    tournamentAvatar: {
+    gameType: {
       type: DataTypes.STRING,
-      allowNull: false,
     },
     mapBoDes: {
       type: DataTypes.TEXT,
@@ -72,6 +58,9 @@ module.exports = function (DB, DataTypes) {
     mapDetails: {
       type: DataTypes.TEXT,
     },
+    matchDescription:{
+      type: DataTypes.STRING,
+    }
   }, {
     createdAt: false,
     updatedAt: false,
