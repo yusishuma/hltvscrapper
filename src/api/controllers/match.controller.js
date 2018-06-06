@@ -2,7 +2,7 @@
  * Created by tonghema on 2018/5/28.
  */
 const request = require('superagent');
-// const { omit } = require('lodash');
+const vars = require('../../config/vars');
 const sequelize = require('sequelize');
 const DB = require('../../config/db');
 const TeamModel = require('../models/team.model')(DB, sequelize);
@@ -91,7 +91,7 @@ exports.matcheMaps = async () => {
       for (let index = 0; index < urlsDatas.length; index++) {
         setTimeout(() => {
           return true
-        }, 15000 * index);
+        }, vars.setTimeNum * index);
         let urlsData = urlsDatas[index];
         request.get('https://www.hltv.org' + urlsData.url).then((data) => {
           let $ = cheerio.load(data.res.text);

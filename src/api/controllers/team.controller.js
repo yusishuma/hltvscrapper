@@ -7,7 +7,7 @@ const sequelize = require('sequelize');
 const DB = require('../../config/db');
 const TeamModel = require('../models/team.model')(DB, sequelize);
 const TMHISTORIESModel = require('../models/tmhistroy.model')(DB, sequelize);
-// const Q = require('q');
+const vars = require('../../config/vars');
 const qlimit = require('qlimit')(10);
 const cheerio = require('cheerio');
 const moment = require('moment');
@@ -20,7 +20,7 @@ exports.teamsMatches = async () => {
     for (let index = 0; index < teams.length; index++) {
       setTimeout(() => {
         return true
-      }, 15000 * index);
+      }, vars.setTimeNum * index);
       let team = teams[index];
       let statusUrl = 'https://www.hltv.org/stats/teams/matches/' + team.hltvId + '/' + team.name;
       request.get(statusUrl).then((result) => {
@@ -110,7 +110,7 @@ exports.teamsMaps = async () => {
     for (let index = 0; index < teams.length; index++) {
       setTimeout(() => {
         return true
-      }, 15000 * index);
+      }, vars.setTimeNum * index);
       let team = teams[index];
       let statusUrl = 'https://www.hltv.org/stats/teams/maps/' + team.hltvId + '/' + team.name;
       request.get(statusUrl).then((result) => {

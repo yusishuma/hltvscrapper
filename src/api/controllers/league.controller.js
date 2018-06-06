@@ -6,7 +6,7 @@ const request = require('superagent');
 const sequelize = require('sequelize');
 const DB = require('../../config/db');
 const LeagueModel = require('../models/league.model')(DB, sequelize);
-const Q = require('q');
+const vars = require('../../config/vars');
 const qlimit = require('qlimit')(10);
 const cheerio = require('cheerio');
 
@@ -55,7 +55,7 @@ exports.leagues = async () => {
         for(let index = 0; index < data.length; index++) {
           setTimeout(() => {
             return true
-          }, 15000 * index);
+          }, vars.setTimeNum * index);
           let item = data[index];
           let hltvId = item.url.split('/')[2];
           return request
