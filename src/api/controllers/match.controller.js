@@ -24,7 +24,7 @@ exports.teams = async () => {
         return Q.all(data.body.playerTeams.map(qlimit((item) => {
           const team = item;
           return TeamModel.count({where: {hltvId: team.hltvId}}).then((count) => {
-            if(count === 0 && team.hltvId){
+            if (count === 0 && team.hltvId) {
               return TeamModel.create({
                 name: team.name,
                 newName: team.newName,
@@ -36,7 +36,7 @@ exports.teams = async () => {
               }).catch(function (result) {
                 console.log(result);
               });
-            }else if(team.hltvId){
+            } else if (team.hltvId) {
               return TeamModel.update({
                 name: team.name,
                 newName: team.newName,
@@ -48,7 +48,7 @@ exports.teams = async () => {
               }, {where: {hltvId: team.hltvId}});
             }
           })
-          })));
+        })));
       });
   } catch (error) {
     return error;
@@ -88,7 +88,11 @@ exports.matcheMaps = async () => {
       $("div.live-match").find('a.a-reset').map(function (i, e) {
         urlsDatas.push({url: $(e).attr("href"), bo: $(e).find('table.table').find('td.bestof').text()});
       });
-      Q.all(urlsDatas.map(qlimit((urlsData) => {
+      for (let index = 0; index < urlsDatas.length; index++) {
+        setTimeout(() => {
+          return true
+        }, 15000 * index);
+        let urlsData = urlsDatas[index];
         request.get('https://www.hltv.org' + urlsData.url).then((data) => {
           let $ = cheerio.load(data.res.text);
           let mapBoDes = $("div.padding.preformatted-text").html();
@@ -106,10 +110,12 @@ exports.matcheMaps = async () => {
             match.date = moment(parseInt($(e).find('.time').attr('data-unix')));
             match.leagueName = $(e).find('div.event.text-ellipsis').text();
             match.leagueId = $(e).find('div.event.text-ellipsis').find('a').attr('href').split('/')[2];
-            match.teamId1 = $(e).find('div.team1-gradient').find('a').attr('href')? $(e).find('div.team1-gradient').find('a').attr('href').split('/')[2] : '';
-            match.teamId2 = $(e).find('div.team2-gradient').find('a').attr('href')? $(e).find('div.team2-gradient').find('a').attr('href').split('/')[2] : '';
+            match.teamId1 = $(e).find('div.team1-gradient').find('a').attr('href') ? $(e).find('div.team1-gradient').find('a').attr('href').split('/')[2] : '';
+            match.teamId2 = $(e).find('div.team2-gradient').find('a').attr('href') ? $(e).find('div.team2-gradient').find('a').attr('href').split('/')[2] : '';
             match.teamId1Url = $(e).find('div.team1-gradient').find('a').attr('href');
-            match.teamId2Url = $(e).find('div.team2-gradient').find('a').attr('href');
+            match.teamId1Url = $(e).find('div.team1-gradient').find('a').attr('href');
+            match.team1Name = $(e).find('div.team1-gradient').find('div.teamName').text();
+            match.team2Name = $(e).find('div.team2-gradient').find('div.teamName').text();
             match.matchDescription = $(e).find('div.text').text();
             match.team1Score = $(e).find('div.team1-gradient').children('div').text() || 0;
             match.team2Score = $(e).find('div.team2-gradient').children('div').text() || 0;
@@ -132,28 +138,28 @@ exports.matcheMaps = async () => {
           $("div.half-width.standard-box").find('table.table.matches').map(function (i, e) {
             $(e).find('td').map(function (j, f) {
               let pastMatch = {};
-              if(j === 0){
+              if (j === 0) {
                 pastMatch.bo = $(f).text();
               }
-              if(j === 1){
+              if (j === 1) {
                 pastMatch.teamName = $(f).text().replace(/[\r\n]/g, "").trim();
               }
-              if($(f).find('a').attr('href')){
+              if ($(f).find('a').attr('href')) {
                 pastMatch.teamId = $(f).find('a').attr('href').split('/')[2];
               }
-              if(j === 2){
+              if (j === 2) {
                 pastMatch.teamScore = $(f).text();
               }
-              if(i === 0){
+              if (i === 0) {
                 pastMatch1.push(pastMatch);
               }
-              if(i === 1){
+              if (i === 1) {
                 pastMatch2.push(pastMatch);
               }
             });
           });
           return MatchModel.count({where: {hltvId: urlsData.url.split('/')[2]}}).then((count) => {
-            if(count === 0){
+            if (count === 0) {
               return MatchModel.create({
                 hltvId: urlsData.url.split('/')[2],
                 date: match.date.toString(),
@@ -171,7 +177,7 @@ exports.matcheMaps = async () => {
                 mapDetails: JSON.stringify(mapDetails),
                 matchDescription: match.matchDescription
               });
-            }else {
+            } else {
               return MatchModel.update({
                 hltvId: urlsData.url.split('/')[2],
                 date: match.date.toString(),
@@ -192,24 +198,24 @@ exports.matcheMaps = async () => {
             }
           }).then(() => {
             let teams = [];
-            if (match.teamId1Url && match.teamId1){
-              teams.push({hltvId: match.teamId1, teamUrl: match.teamId1Url})
+            if (match.teamId1Url && match.teamId1) {
+              teams.push({hltvId: match.teamId1, teamUrl: match.teamId1Url, teamName: match.team1Name})
             }
-            if (match.teamId2Url && match.teamId2){
-              teams.push({hltvId: match.teamId2, teamUrl: match.teamId2Url})
+            if (match.teamId2Url && match.teamId2) {
+              teams.push({hltvId: match.teamId2, teamUrl: match.teamId2Url, teamName: match.team2Name})
             }
             return Q.all(teams.map((team) => {
               return TeamModel.count({where: {hltvId: team.hltvId}}).then((count) => {
-                if(count === 0 && team.hltvId){
+                if (count === 0 && team.hltvId) {
                   return TeamModel.create({
-                    name: team.teamUrl.split('/')[3],
+                    name: team.teamName,
                     hltvId: team.hltvId,
                     teamUrl: team.teamUrl,
                     gameType: 'cs:go',
                   }).catch(function (result) {
                     console.log(result);
                   });
-                }else if(team.hltvId){
+                } else if (team.hltvId) {
                   return TeamModel.update({
                     teamUrl: team.teamUrl,
                     gameType: 'cs:go',
@@ -219,6 +225,6 @@ exports.matcheMaps = async () => {
             }))
           });
         })
-      })))
+      }
     })
 };

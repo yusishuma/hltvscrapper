@@ -52,8 +52,12 @@ exports.leagues = async () => {
             status: 'Upcoming events'
           });
         });
-        Q.all(data.map(qlimit((item) => {
-          var hltvId = item.url.split('/')[2];
+        for(let index = 0; index < data.length; index++) {
+          setTimeout(() => {
+            return true
+          }, 15000 * index);
+          let item = data[index];
+          let hltvId = item.url.split('/')[2];
           return request
             .get('https://www.hltv.org' + item.url).then((leagueData) => {
               let $ = cheerio.load(leagueData.res.text);
@@ -79,7 +83,7 @@ exports.leagues = async () => {
                 }
               });
               return LeagueModel.count({where: {hltvId: hltvId}}).then((count) => {
-                if(count === 0){
+                if (count === 0) {
                   LeagueModel.create({
                     hltvId: hltvId,
                     name: item.name,
@@ -93,7 +97,7 @@ exports.leagues = async () => {
                   }).catch(function (result) {
                     console.log(result);
                   });
-                }else {
+                } else {
                   return LeagueModel.update({
                     hltvId: hltvId,
                     name: item.name,
@@ -108,7 +112,7 @@ exports.leagues = async () => {
                 }
               })
             });
-        })));
+        }
       })
   } catch (error) {
     return error;
