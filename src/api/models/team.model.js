@@ -24,11 +24,18 @@ module.exports = function (DB, DataTypes) {
     avatarFile: {
       type: DataTypes.STRING,
     },
-    // players: {
-    //   type: DataTypes.TEXT,
-    // },
+    players: {
+      type: DataTypes.TEXT,
+    },
+    mapsRates: {
+      type: DataTypes.TEXT,
+    },
     gameType: {
       type: DataTypes.STRING,
+    },
+    isUpdateMatch: {
+      type: DataTypes.BOOLEAN,
+      default: false
     }
   }, {
     createdAt: false,

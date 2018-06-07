@@ -18,4 +18,5 @@ module.exports = {
   },
   logs: process.env.NODE_ENV === 'production' ? 'combined' : 'dev',
   setTimeNum: 30000,
+  setLimitNum: 20,
 };

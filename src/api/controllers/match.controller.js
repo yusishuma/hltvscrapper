@@ -88,7 +88,8 @@ exports.matcheMaps = async () => {
       $("div.live-match").find('a.a-reset').map(function (i, e) {
         urlsDatas.push({url: $(e).attr("href"), bo: $(e).find('table.table').find('td.bestof').text()});
       });
-      for (let index = 0; index < urlsDatas.length; index++) {
+      let limit = vars.setLimitNum || urlsDatas.length;
+      for (let index = 0; index < limit; index++) {
         setTimeout(() => {
           return true
         }, vars.setTimeNum * index);

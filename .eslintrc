@@ -6,7 +6,8 @@
     "no-use-before-define": ["error", { "variables": false }],
     "no-multi-str": 0,
     "newline-per-chained-call": 0,
-    "indent": "off"
+    "indent": "off",
+    "prefer-arrow-callback": "off"
   },
   "env": {
     "node": true,

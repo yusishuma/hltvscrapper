@@ -11,68 +11,72 @@ const team = require('./api/controllers/team.controller');
 // const cheerio = require('cheerio');
 // const request = require('superagent');
 // const _ = require('lodash');
-
+//
 // request
-//   .get('https://www.hltv.org/stats/teams/matches/6668/FLuffy Gangsters')
+//   .get('https://www.hltv.org/stats/teams/maps/6922/Corvidae')
 //   .then((result) => {
-    // let $ = cheerio.load(result.res.text);
-    // $('div.team-name.text-ellipsis').find('table.table.matches').map(function (i, e) {
-    //  $(e).find('td').map(function (j, f) {
-    //    if($(f).find('a').attr('href')){
-    //      console.log($(f).text(),$(f).find('a').attr('href').split('/')[2]);
-    //    }https://www.hltv.org/stats/teams/6673/NRG
-    //    console.log("------", $('div.team-name.text-ellipsis').text());
-    //
-    //  });
-    //
-    // });
-    // $("tbody").find('tr').map((i, e) => {
-    //
-    //  // console.log($(e).find('td').text());
-    //   if(i == 0){
-    //     $(e).find('td').map((j, f) => {
-    //       if(j == 0){
-    //         console.log($(f).text());
-    //       }
-    //       if(j == 1){
-    //         console.log($(f).text());
-    //         console.log($(f).find('a').attr('href'));
-    //         console.log($(f).find('img').attr('src'));
-    //       }
-    //
-    //       if(j == 3){
-    //         console.log($(f).text());
-    //         console.log($(f).find('a').attr('href'));
-    //         console.log($(f).find('img').attr('src'));
-    //       }
-    //       if(j == 4){
-    //         console.log($(f).text());
-    //       }
-    //       if(j == 5){
-    //         console.log($(f).text());
-    //       }
-    //       if(j == 6){
-    //         console.log($(f).text());
-    //       }
-    //     })
-    //   }
-    // });
-  // });
+//     let $ = cheerio.load(result.res.text);
+//     $('div.lineup-container').map((i, e) => {
+//       $(e).find('div.lineup-year').find('span').text();
+//       $(e).find('div.grid').find('div.col.teammate').map((j, f) => {
+//         console.log( $(f).text(), '=======data==========', j);
+//         console.log( $(f).find('img.container-width').attr('src'), '=======data==========', j);
+//         console.log( $(f).find('img.flag').attr('src'), '=======data==========', j);
+//         console.log( $(f).find('div.text-ellipsis').text(), '=======data==========', j);
+//       })
+//       console.log(i, '=======data==========');
+//     });
+//   });
+// '*/15 * * * *'
 
-
-schedule.scheduleJob('*/5 * * * *', () => {
+const matchesRule = new schedule.RecurrenceRule();
+matchesRule.hour = 15;
+schedule.scheduleJob(matchesRule, () => {
   Q.fcall(() => {
-    matchesDetial.teams();
+    console.log('开始抓取matchesDetial');
+    return matchesDetial.teams();
   }).then(() => {
-    team.teams();
+    console.log('开始抓取matcheMaps');
+    return matchesDetial.matcheMaps();
   }).then(() => {
-    league.leagues();
-  }).then(() => {
-    matchesDetial.matcheMaps();
-  }).then(() => {
-    matchesDetial.matchesStatusGameType();
+    console.log('开始抓取matchesStatusGameType');
+    return matchesDetial.matchesStatusGameType();
   });
 });
+
+const teamsMatchesRule = new schedule.RecurrenceRule();
+teamsMatchesRule.hour = 16;
+schedule.scheduleJob(teamsMatchesRule, function () {
+  return Q.fcall(function () {
+    console.log('开始抓取teamsMatches');
+    return team.teamsMatches();
+  });
+});
+const teamsMapRatesRule = new schedule.RecurrenceRule();
+teamsMapRatesRule.hour = 17;
+schedule.scheduleJob(teamsMapRatesRule, function () {
+  return Q.fcall(function () {
+    console.log('开始抓取teamsMapRates');
+    return team.teamsMapRates();
+  });
+});
+const teamsPlayersRule = new schedule.RecurrenceRule();
+teamsPlayersRule.hour = 19;
+schedule.scheduleJob(teamsPlayersRule, function () {
+  return Q.fcall(function () {
+    console.log('开始抓取teamsMapRates');
+    return team.teamsPlayers();
+  });
+});
+const leaguesRule = new schedule.RecurrenceRule();
+leaguesRule.hour = 20;
+schedule.scheduleJob(leaguesRule, function () {
+  return Q.fcall(function () {
+    console.log('开始抓取leagues');
+    return league.leagues();
+  });
+});
+
 
 // listen to requests
 app.listen(port, () => console.info(`server started on port ${port} (${env})`));

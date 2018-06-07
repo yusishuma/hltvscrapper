@@ -52,7 +52,8 @@ exports.leagues = async () => {
             status: 'Upcoming events'
           });
         });
-        for(let index = 0; index < data.length; index++) {
+        let limit = vars.setLimitNum || data.length;
+        for(let index = 0; index < limit; index++) {
           setTimeout(() => {
             return true
           }, vars.setTimeNum * index);
