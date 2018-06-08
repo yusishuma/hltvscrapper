@@ -3,8 +3,8 @@
  */
 const Sequelize = require('sequelize');
 
-module.exports = new Sequelize('hltv', 'root', '123456', {
-  host: 'localhost', // 数据库地址
+module.exports = new Sequelize('hltv', 'node', 'node123456', {
+  host: '172.17.99.189', // 数据库地址
   dialect: 'mysql', // 指定连接的数据库类型
   pool: {
     max: 5, // 连接池中最大连接数量

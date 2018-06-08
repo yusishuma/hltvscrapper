@@ -19,91 +19,91 @@ exports.teamsMatches = async () => {
     let teams = await TeamModel.findAll({where: {isUpdateMatch: false}, limit: vars.setLimitNum});
     for (let index = 0; index < teams.length; index++) {
       setTimeout(() => {
-        return true
-      }, vars.setTimeNum * index);
-      let team = teams[index];
-      let statusUrl = 'https://www.hltv.org/stats/teams/matches/' + team.hltvId + '/' + team.name;
-      request.get(statusUrl).then((result) => {
-        let $ = cheerio.load(result.res.text);
-        let item = {};
-        $("tbody").find('tr').map((i, e) => {
-          $(e).find('td').map((j, f) => {
-            if (j === 0) {
-              item.date = $(f).text();
+        let team = teams[index];
+        let statusUrl = 'https://www.hltv.org/stats/teams/matches/' + team.hltvId + '/' + team.name;
+        request.get(statusUrl).then((result) => {
+          let $ = cheerio.load(result.res.text);
+          let item = {};
+          $("tbody").find('tr').map((i, e) => {
+            $(e).find('td').map((j, f) => {
+              if (j === 0) {
+                item.date = $(f).text();
+              }
+              if (j === 1) {
+                item.leagueName = $(f).text();
+                item.leagueId = $(f).find('a').attr('href').split('=')[1];
+                item.leagueLogo = $(f).find('img').attr('src');
+              }
+              if (j === 3) {
+                item.opponentName = $(f).text();
+                item.opponentId = $(f).find('a').attr('href').split('/')[3];
+                item.opponentFlag = $(f).find('img').attr('src');
+              }
+              if (j === 4) {
+                item.map = $(f).text();
+              }
+              if (j === 5) {
+                item.result = $(f).text();
+              }
+              if (j === 6) {
+                item.win = $(f).text();
+              }
+            })
+          });
+          return TMHISTORIESModel.count({
+            where: {
+              teamId: team.hltvId,
+              opponentId: item.opponentId,
+              date: item.date,
+              map: item.map
             }
-            if (j === 1) {
-              item.leagueName = $(f).text();
-              item.leagueId = $(f).find('a').attr('href').split('=')[1];
-              item.leagueLogo = $(f).find('img').attr('src');
-            }
-            if (j === 3) {
-              item.opponentName = $(f).text();
-              item.opponentId = $(f).find('a').attr('href').split('/')[3];
-              item.opponentFlag = $(f).find('img').attr('src');
-            }
-            if (j === 4) {
-              item.map = $(f).text();
-            }
-            if (j === 5) {
-              item.result = $(f).text();
-            }
-            if (j === 6) {
-              item.win = $(f).text();
+          }).then((count) => {
+            if (count === 0) {
+              return TMHISTORIESModel.create({
+                teamId: team.hltvId,
+                opponentId: item.opponentId,
+                opponentName: item.opponentName,
+                opponentFlag: item.opponentFlag,
+                leagueId: item.leagueId,
+                leagueName: item.leagueName,
+                leagueLogo: item.leagueLogo,
+                date: item.date,
+                map: item.map,
+                win: item.win,
+                result: item.result
+              });
+            } else {
+              return TMHISTORIESModel.update({
+                teamId: team.hltvId,
+                opponentId: item.opponentId,
+                opponentName: item.opponentName,
+                opponentFlag: item.opponentFlag,
+                leagueId: item.leagueId,
+                leagueName: item.leagueName,
+                leagueLogo: item.leagueLogo,
+                date: item.date,
+                map: item.map,
+                win: item.win,
+                result: item.result
+              }, {
+                where: {
+                  teamId: team.hltvId,
+                  opponentId: item.opponentId,
+                  date: item.date,
+                  map: item.map
+                }
+              }).then(() => {
+                return TeamModel.update({isUpdateMatch: true}, {
+                  where: {
+                    teamId: team.hltvId
+                  }
+                });
+              });
             }
           })
         });
-        return TMHISTORIESModel.count({
-          where: {
-            teamId: team.hltvId,
-            opponentId: item.opponentId,
-            date: item.date,
-            map: item.map
-          }
-        }).then((count) => {
-          if (count === 0) {
-            return TMHISTORIESModel.create({
-              teamId: team.hltvId,
-              opponentId: item.opponentId,
-              opponentName: item.opponentName,
-              opponentFlag: item.opponentFlag,
-              leagueId: item.leagueId,
-              leagueName: item.leagueName,
-              leagueLogo: item.leagueLogo,
-              date: item.date,
-              map: item.map,
-              win: item.win,
-              result: item.result
-            });
-          } else {
-            return TMHISTORIESModel.update({
-              teamId: team.hltvId,
-              opponentId: item.opponentId,
-              opponentName: item.opponentName,
-              opponentFlag: item.opponentFlag,
-              leagueId: item.leagueId,
-              leagueName: item.leagueName,
-              leagueLogo: item.leagueLogo,
-              date: item.date,
-              map: item.map,
-              win: item.win,
-              result: item.result
-            }, {
-              where: {
-                teamId: team.hltvId,
-                opponentId: item.opponentId,
-                date: item.date,
-                map: item.map
-              }
-            }).then(() => {
-              return TeamModel.update({isUpdateMatch: true}, {
-                where: {
-                  teamId: team.hltvId
-                }
-              });
-            });
-          }
-        })
-      });
+      }, vars.setTimeNum * index);
+
     }
   } catch (error) {
     console.log(error);
@@ -115,54 +115,54 @@ exports.teamsMapRates = async () => {
     let teams = await TeamModel.findAll({where: {mapsRates: {$eq: null}}, limit: vars.setLimitNum});
     for (let index = 0; index < teams.length; index++) {
       setTimeout(() => {
-        return true
-      }, vars.setTimeNum * index);
-      let team = teams[index];
-      let statusUrl = 'https://www.hltv.org/stats/teams/maps/' + team.hltvId + '/' + team.name;
-      request.get(statusUrl).then((result) => {
-        let $ = cheerio.load(result.res.text);
-        let items = [];
-        let itemsImgs = [];
-        let itemsNames = [];
-        let itemsRates = [];
-        $('div.col').find('div.map-pool-map-holder').find('img.map-pool-map').map((i, e) => {
-          itemsImgs.push($(e).attr('src'));
-        });
-        $('div.col').find('div.map-pool-map-holder').find('div.map-pool-map-name').map((i, e) => {
-          itemsNames.push($(e).text());
-        });
-        $('div.col').find('div.stats-rows.standard-box').map((i, e) => {
-          let rate = {};
-          $(e).find('span').map((j, f) => {
-            if (j === 1) {
-              rate.wdl = $(f).text();
-            }
-            if (j === 3) {
-              rate.wr = $(f).text();
-            }
-            if (j === 5) {
-              rate.tr = $(f).text();
-            }
-            if (j === 7) {
-              rate.rag = $(f).text();
-            }
-            if (j === 9) {
-              rate.rac = $(f).text();
+        let team = teams[index];
+        let statusUrl = 'https://www.hltv.org/stats/teams/maps/' + team.hltvId + '/' + team.name;
+        request.get(statusUrl).then((result) => {
+          let $ = cheerio.load(result.res.text);
+          let items = [];
+          let itemsImgs = [];
+          let itemsNames = [];
+          let itemsRates = [];
+          $('div.col').find('div.map-pool-map-holder').find('img.map-pool-map').map((i, e) => {
+            itemsImgs.push($(e).attr('src'));
+          });
+          $('div.col').find('div.map-pool-map-holder').find('div.map-pool-map-name').map((i, e) => {
+            itemsNames.push($(e).text());
+          });
+          $('div.col').find('div.stats-rows.standard-box').map((i, e) => {
+            let rate = {};
+            $(e).find('span').map((j, f) => {
+              if (j === 1) {
+                rate.wdl = $(f).text();
+              }
+              if (j === 3) {
+                rate.wr = $(f).text();
+              }
+              if (j === 5) {
+                rate.tr = $(f).text();
+              }
+              if (j === 7) {
+                rate.rag = $(f).text();
+              }
+              if (j === 9) {
+                rate.rac = $(f).text();
+              }
+            });
+            itemsRates.push(rate);
+          });
+          for (let i = 0; i < itemsNames.length; i++) {
+            items.push({name: itemsNames[i], avatar: itemsImgs[i], rates: itemsRates[i]});
+          }
+          return TeamModel.update({
+            mapsRates: JSON.stringify(items),
+          }, {
+            where: {
+              hltvId: team.hltvId
             }
           });
-          itemsRates.push(rate);
-        });
-        for (let i = 0; i < itemsNames.length; i++) {
-          items.push({name: itemsNames[i], avatar: itemsImgs[i], rates: itemsRates[i]});
-        }
-        return TeamModel.update({
-          mapsRates: JSON.stringify(items),
-        }, {
-          where: {
-            hltvId: team.hltvId
-          }
-        });
-      })
+        })
+      }, vars.setTimeNum * index);
+
     }
   } catch (error) {
     console.log(error);
@@ -174,31 +174,31 @@ exports.teamsPlayers = async () => {
     let teams = await TeamModel.findAll({where: {mapsRates: {$eq: null}}, limit: vars.setLimitNum});
     for (let index = 0; index < teams.length; index++) {
       setTimeout(() => {
-        return true
-      }, vars.setTimeNum * index);
-      let team = teams[index];
-      let statusUrl = 'https://www.hltv.org/stats/teams/lineups/' + team.hltvId + '/' + team.name;
-      request.get(statusUrl).then((result) => {
-        let $ = cheerio.load(result.res.text);
-        let items = [];
-        $('div.lineup-container').map((i, e) => {
-          $(e).find('div.grid').find('div.col.teammate').map((j, f) => {
-            let item = {};
-            item.avatar = $(f).find('img.container-width').attr('src');
-            item.flag = $(f).find('img.flag').attr('src');
-            item.name = $(f).find('div.text-ellipsis').text();
-            item.date = $(e).children('div.lineup-year').text().replace('Replace context with lineup', '');
-            items.push(item);
+        let team = teams[index];
+        let statusUrl = 'https://www.hltv.org/stats/teams/lineups/' + team.hltvId + '/' + team.name;
+        request.get(statusUrl).then((result) => {
+          let $ = cheerio.load(result.res.text);
+          let items = [];
+          $('div.lineup-container').map((i, e) => {
+            $(e).find('div.grid').find('div.col.teammate').map((j, f) => {
+              let item = {};
+              item.avatar = $(f).find('img.container-width').attr('src');
+              item.flag = $(f).find('img.flag').attr('src');
+              item.name = $(f).find('div.text-ellipsis').text();
+              item.date = $(e).children('div.lineup-year').text().replace('Replace context with lineup', '');
+              items.push(item);
+            });
           });
-        });
-        return TeamModel.update({
-          players: JSON.stringify(items),
-        }, {
-          where: {
-            hltvId: team.hltvId
-          }
-        });
-      })
+          return TeamModel.update({
+            players: JSON.stringify(items),
+          }, {
+            where: {
+              hltvId: team.hltvId
+            }
+          });
+        })
+      }, vars.setTimeNum * index);
+
     }
   } catch (error) {
     console.log(error);

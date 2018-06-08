@@ -53,66 +53,66 @@ exports.leagues = async () => {
           });
         });
         let limit = vars.setLimitNum || data.length;
-        for(let index = 0; index < limit; index++) {
+        for (let index = 0; index < limit; index++) {
           setTimeout(() => {
-            return true
+            let item = data[index];
+            let hltvId = item.url.split('/')[2];
+            return request
+              .get('https://www.hltv.org' + item.url).then((leagueData) => {
+                let $ = cheerio.load(leagueData.res.text);
+                let league = {};
+                let teams = [];
+                $("table.info").find('td').map(function (i, e) {
+                  if (i === 4) {
+                    league.period = $(e).text()
+                  }
+                  if (i === 5) {
+                    league.prizePool = $(e).text()
+                  }
+                  if (i === 6) {
+                    league.teamsSum = $(e).text()
+                  }
+                  if (i === 7) {
+                    league.location = $(e).text()
+                  }
+                });
+                $("div.col").map(function (i, e) {
+                  if ($(e).find('div.team-name').text() !== '') {
+                    teams.push({name: $(e).find('div.team-name').text(), avatar: $(e).find('img.logo').attr('src')});
+                  }
+                });
+                return LeagueModel.count({where: {hltvId: hltvId}}).then((count) => {
+                  if (count === 0) {
+                    LeagueModel.create({
+                      hltvId: hltvId,
+                      name: item.name,
+                      status: item.status,
+                      period: league.period,
+                      prizePool: league.prizePool,
+                      teamsSum: league.teamsSum,
+                      location: league.location,
+                      teams: JSON.stringify(teams),
+                      avatar: item.avatar
+                    }).catch(function (result) {
+                      console.log(result);
+                    });
+                  } else {
+                    return LeagueModel.update({
+                      hltvId: hltvId,
+                      name: item.name,
+                      status: item.status,
+                      period: league.period,
+                      prizePool: league.prizePool,
+                      teamsSum: league.teamsSum,
+                      location: league.location,
+                      teams: JSON.stringify(teams),
+                      avatar: item.avatar
+                    }, {where: {hltvId: hltvId}});
+                  }
+                })
+              });
           }, vars.setTimeNum * index);
-          let item = data[index];
-          let hltvId = item.url.split('/')[2];
-          return request
-            .get('https://www.hltv.org' + item.url).then((leagueData) => {
-              let $ = cheerio.load(leagueData.res.text);
-              let league = {};
-              let teams = [];
-              $("table.info").find('td').map(function (i, e) {
-                if (i === 4) {
-                  league.period = $(e).text()
-                }
-                if (i === 5) {
-                  league.prizePool = $(e).text()
-                }
-                if (i === 6) {
-                  league.teamsSum = $(e).text()
-                }
-                if (i === 7) {
-                  league.location = $(e).text()
-                }
-              });
-              $("div.col").map(function (i, e) {
-                if ($(e).find('div.team-name').text() !== '') {
-                  teams.push({name: $(e).find('div.team-name').text(), avatar: $(e).find('img.logo').attr('src')});
-                }
-              });
-              return LeagueModel.count({where: {hltvId: hltvId}}).then((count) => {
-                if (count === 0) {
-                  LeagueModel.create({
-                    hltvId: hltvId,
-                    name: item.name,
-                    status: item.status,
-                    period: league.period,
-                    prizePool: league.prizePool,
-                    teamsSum: league.teamsSum,
-                    location: league.location,
-                    teams: JSON.stringify(teams),
-                    avatar: item.avatar
-                  }).catch(function (result) {
-                    console.log(result);
-                  });
-                } else {
-                  return LeagueModel.update({
-                    hltvId: hltvId,
-                    name: item.name,
-                    status: item.status,
-                    period: league.period,
-                    prizePool: league.prizePool,
-                    teamsSum: league.teamsSum,
-                    location: league.location,
-                    teams: JSON.stringify(teams),
-                    avatar: item.avatar
-                  }, {where: {hltvId: hltvId}});
-                }
-              })
-            });
+
         }
       })
   } catch (error) {
