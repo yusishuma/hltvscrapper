@@ -15,9 +15,6 @@ module.exports = function (DB, DataTypes) {
     newName: {
       type: DataTypes.STRING,
     },
-    teamUrl: {
-      type: DataTypes.STRING,
-    },
     country: {
       type: DataTypes.STRING,
     },
@@ -35,7 +32,7 @@ module.exports = function (DB, DataTypes) {
     },
     isUpdateMatch: {
       type: DataTypes.BOOLEAN,
-      default: false
+      defaultValue: false
     }
   }, {
     createdAt: false,

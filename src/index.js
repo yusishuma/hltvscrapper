@@ -37,13 +37,20 @@ schedule.scheduleJob(matchesRule, () => {
     return matchesDetial.teams();
   }).then(() => {
     console.log('开始抓取matcheMaps');
-    return matchesDetial.matcheMaps();
+    return matchesDetial.matches();
   }).then(() => {
     console.log('开始抓取matchesStatusGameType');
     return matchesDetial.matchesStatusGameType();
   });
 });
-
+const matcheMapsRule = new schedule.RecurrenceRule();
+matcheMapsRule.hour = 15;
+schedule.scheduleJob(matcheMapsRule, () => {
+  Q.fcall(() => {
+    console.log('开始抓取matcheMaps');
+    return matchesDetial.matcheMaps();
+  });
+});
 const teamsMatchesRule = new schedule.RecurrenceRule();
 teamsMatchesRule.hour = 16;
 schedule.scheduleJob(teamsMatchesRule, function () {

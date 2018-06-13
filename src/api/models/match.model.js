@@ -11,15 +11,27 @@ module.exports = function (DB, DataTypes) {
     },
     date: {
       type: DataTypes.STRING,
-      allowNull: false,
     },
-    teamId1: {
+    matchDetialUrl: {
       type: DataTypes.STRING,
-      allowNull: false,
     },
-    teamId2: {
+    team1Id: {
       type: DataTypes.STRING,
-      allowNull: false,
+    },
+    team1Name: {
+      type: DataTypes.STRING,
+    },
+    team1Logo: {
+      type: DataTypes.STRING,
+    },
+    team2Id: {
+      type: DataTypes.STRING,
+    },
+    team2Name: {
+      type: DataTypes.STRING,
+    },
+    team2Logo: {
+      type: DataTypes.STRING,
     },
     team1Score: {
       type: DataTypes.STRING,
@@ -44,7 +56,9 @@ module.exports = function (DB, DataTypes) {
     },
     leagueName: {
       type: DataTypes.STRING,
-      allowNull: false,
+    },
+    leagueLogo: {
+      type: DataTypes.STRING,
     },
     gameType: {
       type: DataTypes.STRING,
@@ -58,7 +72,7 @@ module.exports = function (DB, DataTypes) {
     mapDetails: {
       type: DataTypes.TEXT,
     },
-    matchDescription:{
+    matchDescription: {
       type: DataTypes.STRING,
     }
   }, {
