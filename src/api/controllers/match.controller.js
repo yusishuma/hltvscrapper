@@ -75,7 +75,7 @@ exports.matchesStatusGameType = async () => {
   }
 };
 exports.matcheMaps = async () => {
-  let urlsDatas = await MatchModel.findAll({where: {isUpdateMatch: false}, limit: vars.setLimitNum});
+  let urlsDatas = await MatchModel.findAll({limit: vars.setLimitNum});
   for (let index = 0; index < urlsDatas.length; index++) {
     setTimeout(() => {
       let urlsData = urlsDatas[index];
@@ -161,7 +161,7 @@ exports.matches = async () => {
         if ($(e).attr("href").search(/matches\//) > 0) {
           let match = {
             matchDetialUrl: $(e).attr("href"),
-            date: moment(parseInt($(e).find('div.time').attr('data-unix'))),
+            date: moment(parseInt($(e).find('div.time').attr('data-unix'))).toString(),
             hltvId: $(e).attr("href").split('/')[2],
           };
           if ($(e).find('td.placeholder-text-cell').length > 0) {
