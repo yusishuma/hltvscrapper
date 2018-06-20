@@ -51,6 +51,9 @@ module.exports = function (DB, DataTypes) {
     status: {
       type: DataTypes.STRING,
     },
+    result: {
+      type: DataTypes.STRING,
+    },
     leagueId: {
       type: DataTypes.STRING,
     },
@@ -74,6 +77,27 @@ module.exports = function (DB, DataTypes) {
     },
     matchDescription: {
       type: DataTypes.STRING,
+    },
+    team1Players: {
+      type: DataTypes.TEXT,
+    },
+    team2Players: {
+      type: DataTypes.TEXT,
+    },
+    videoSrc: {
+      type: DataTypes.TEXT,
+    },
+    headTeam1Win: {
+      type: DataTypes.STRING,
+    },
+    headTeam2Win: {
+      type: DataTypes.STRING,
+    },
+    headTeamOvertimes: {
+      type: DataTypes.STRING,
+    },
+    headToHead: {
+      type: DataTypes.TEXT,
     }
   }, {
     createdAt: false,

@@ -30,6 +30,9 @@ module.exports = function (DB, DataTypes) {
     gameType: {
       type: DataTypes.STRING,
     },
+    ranking: {
+      type: DataTypes.STRING,
+    },
     isUpdateMatch: {
       type: DataTypes.BOOLEAN,
       defaultValue: false

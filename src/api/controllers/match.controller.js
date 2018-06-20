@@ -135,11 +135,132 @@ exports.matcheMaps = async () => {
             }
           });
         });
+        let team1Imgs = [];
+        let team1PlayerNames = [];
+        let team1PlayerFlags = [];
+        let team1PlayerCountries = [];
+        let team1PlayerIds = [];
+        let team2Imgs = [];
+        let team2PlayerNames = [];
+        let team2PlayerFlags = [];
+        let team2PlayerCountries = [];
+        let team2PlayerIds = [];
+        $('div.players').map((i, e) => {
+          if (i === 0) {
+            $(e).find('div.text-ellipsis').map((j, f) => {
+              team1PlayerNames.push($(f).text());
+            });
+            $(e).find('a').map((j, f) => {
+              team1PlayerIds.push($(f).attr('href').split('/')[2]);
+            });
+            $(e).find('img.player-photo').map((j, f) => {
+              team1Imgs.push($(f).attr('src'));
+            });
+            $(e).find('img.flag.gtSmartphone-only').map((j, f) => {
+              team1PlayerFlags.push($(f).attr('src'));
+              team1PlayerCountries.push($(f).attr('title'));
+            })
+          }
+          if (i === 0) {
+            $(e).find('div.text-ellipsis').map((j, f) => {
+              team2PlayerNames.push($(f).text());
+            });
+            $(e).find('a').map((j, f) => {
+              team2PlayerIds.push($(f).attr('href').split('/')[2]);
+            });
+            $(e).find('img.player-photo').map((j, f) => {
+              team2Imgs.push($(f).attr('src'));
+            });
+            $(e).find('img.flag.gtSmartphone-only').map((j, f) => {
+              team2PlayerFlags.push($(f).attr('src'));
+              team2PlayerCountries.push($(f).attr('title'));
+            })
+          }
+        });
+        match.team1Players = [];
+        match.team2Players = [];
+        for(let i = 0; i < team1Imgs.length; i ++){
+          match.team1Players.push({
+            playerId: team1PlayerIds[i],
+            playerName: team1PlayerNames[i],
+            playerFlag: team1PlayerFlags[i],
+            playerAvatar: team1Imgs[i]
+          });
+          match.team2Players.push({
+            playerId: team2PlayerIds[i],
+            playerName: team2PlayerNames[i],
+            playerFlag: team2PlayerFlags[i],
+            playerAvatar: team2Imgs[i]
+          })
+        }
+        match.videoSrc = [];
+        if($('div.stream-box-embed').length > 0){
+          $('div.stream-box-embed').map((i, e) => {
+            match.videoSrc.push({
+              name: $(e).find('span.flagAlign').text(),
+              videoUrl: $(e).attr('data-stream-embed')
+            })
+          });
+        }
+        match.result = $('div.countdown').text() || '';
+        $('div.head-to-head').find('div.bold').map((i, e) => {
+          if(i === 0){
+          match.headTeam1Win = $(e).text();
+          }
+          if(i === 1){
+            match.headTeamOvertimes = $(e).text();
+          }
+          if(i === 2){
+            match.headTeam2Win = $(e).text();
+          }
+        });
+        match.headToHead = [];
+        $('div.standard-box.head-to-head-listing').find('tr.row.nowrap').map((i, e) => {
+          let data = {};
+          $(e).find('td').map((j, f) => {
+              if(j === 0){
+                data.date = $(f).find('span').attr('data-unix');
+              }
+              if(j === 1){
+                data.team1Id = $(f).find('a').attr('href').split('/')[2];
+                data.team1Name = $(f).find('a').text();
+              }
+              if(j === 2){
+                data.team1Logo = $(f).find('img.logo').attr('src');
+              }
+              if(j === 3){
+                data.team2Id = $(f).find('a').attr('href').split('/')[2];
+                data.team2Name = $(f).find('a').text();
+              }
+              if(j === 4){
+                data.team2Logo = $(f).find('img.logo').attr('src');
+              }
+              if(j === 5){
+                data.leagueId = $(f).find('a').attr('href').split('/')[2];
+                data.leagueName = $(f).find('a').text();
+              }
+              if(j === 6){
+                data.mapName = $(f).find('div.dynamic-map-name-full').text();
+              }
+              if(j === 7){
+                data.result = $(f).text();
+              }
+            });
+          match.headToHead.push(data);
+        });
         return MatchModel.update({
           hltvId: urlsData.hltvId,
           date: match.date.toString(),
+          team1Players: JSON.stringify(match.team1Players),
+          team2Players: JSON.stringify(match.team2Players),
+          headTeam1Win: match.headTeam1Win || 0,
+          headTeamOvertimes: match.headTeamOvertimes || 0,
+          headTeam2Win: match.headTeam2Win || 0,
           team1Score: match.team1Score,
           team2Score: match.team2Score,
+          videoSrc: JSON.stringify(match.videoSrc),
+          result: match.result,
+          headToHead: JSON.stringify(match.headToHead),
           team1PastMatch: JSON.stringify(pastMatch1),
           team2PastMatch: JSON.stringify(pastMatch2),
           mapBoDes: mapBoDes,
