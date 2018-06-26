@@ -2,12 +2,12 @@
 Promise = require('bluebird'); // eslint-disable-line no-global-assign
 const { port, env } = require('./config/vars');
 const app = require('./config/express');
-const schedule = require('node-schedule');
-const Q = require('q');
+// const schedule = require('node-schedule');
+// const Q = require('q');
 // const moment = require('moment');
 // const matchesDetial = require('./api/controllers/match.controller');
 // const league = require('./api/controllers/league.controller');
-const team = require('./api/controllers/team.controller');
+// const team = require('./api/controllers/team.controller');
 // const cheerio = require('cheerio');
 // const request = require('superagent');
 // const _ = require('lodash');
@@ -67,14 +67,22 @@ const team = require('./api/controllers/team.controller');
 //     return team.teamsMapRates();
 //   });
 // });
-const teamsPlayersRule = new schedule.RecurrenceRule();
-teamsPlayersRule.minute = 19;
-schedule.scheduleJob(teamsPlayersRule, function () {
-  return Q.fcall(function () {
-    console.log('开始抓取teamsPlayers');
-    return team.teamsPlayers();
-  });
-});
+// const teamsPlayersRule = new schedule.RecurrenceRule();
+// teamsPlayersRule.minute = 19;
+// schedule.scheduleJob(teamsPlayersRule, function () {
+//   return Q.fcall(function () {
+//     console.log('开始抓取teamsPlayers');
+//     return team.teamsPlayers();
+//   });
+// });
+// const teamsRankingRule = new schedule.RecurrenceRule();
+// teamsRankingRule.minute = 19;
+// schedule.scheduleJob(teamsRankingRule, function () {
+//   return Q.fcall(function () {
+//     console.log('开始抓取teamsRanking');
+//     return team.teamsRanking();
+//   });
+// });
 // const leaguesRule = new schedule.RecurrenceRule();
 // leaguesRule.minute = 20;
 // schedule.scheduleJob(leaguesRule, function () {

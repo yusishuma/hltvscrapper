@@ -213,7 +213,7 @@ exports.teamsRanking = async () => {
     for (let index = 0; index < teams.length; index++) {
       setTimeout(() => {
         let team = teams[index];
-        let statusUrl = 'https://www.hltv.org/teams/' + team.hltvId + '/' + team.name.toLowerCase().replace(/ /g, "-");
+        let statusUrl = 'https://www.hltv.org/team/' + team.hltvId + '/' + team.name.toLowerCase().replace(/ /g, "-");
         request.get(statusUrl).then((result) => {
           let $ = cheerio.load(result.res.text);
           let ranking = '';

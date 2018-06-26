@@ -82,7 +82,7 @@ exports.matcheMaps = async () => {
   var matchIds = _.map(founderMatches, function (item) {
     return item.hltvId;
   });
-  let urlsDatas = await MatchModel.findAll({where: {hltvId: {$in: matchIds}}});
+  let urlsDatas = await MatchModel.findAll({where: {hltvId: {$in: matchIds}}, limit: vars.setLimitNum});
   for (let index = 0; index < urlsDatas.length; index++) {
     setTimeout(() => {
       let urlsData = urlsDatas[index];
