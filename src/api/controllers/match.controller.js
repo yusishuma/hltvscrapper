@@ -13,7 +13,7 @@ const Q = require('q');
 const qlimit = require('qlimit')(10);
 const cheerio = require('cheerio');
 const moment = require('moment');
-const FounderMatchModel = require('../models/founder.team.model')(FDB, sequelize);
+const FounderMatchModel = require('../models/founder.match.model')(FDB, sequelize);
 
 TeamModel.sync({force: false});
 MatchModel.sync({force: false});
@@ -80,7 +80,7 @@ exports.matchesStatusGameType = async () => {
 exports.matcheMaps = async () => {
   let founderMatches = await FounderMatchModel.findAll({attributes: ['hltvId'], where: {add: 1}, limit: vars.setLimitNum});
   var matchIds = _.map(founderMatches, function (item) {
-    return item.hltvId;
+    return item.hltvId.toString();
   });
   let urlsDatas = await MatchModel.findAll({where: {hltvId: {$in: matchIds}}, limit: vars.setLimitNum});
   for (let index = 0; index < urlsDatas.length; index++) {
