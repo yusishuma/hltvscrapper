@@ -3,6 +3,7 @@
  */
 const request = require('superagent');
 const vars = require('../../config/vars');
+const _ = require('lodash');
 const sequelize = require('sequelize');
 const DB = require('../../config/db').hltvDB;
 const FDB = require('../../config/db').founderDB;
@@ -12,21 +13,7 @@ const Q = require('q');
 const qlimit = require('qlimit')(10);
 const cheerio = require('cheerio');
 const moment = require('moment');
-const FounderMatchModel = (sequelize) => {
-  return FDB.define('dedicate_match', {
-    hltvId: {
-      type: sequelize.INTEGER
-    },
-    name: {
-      type: sequelize.STRING,
-      allowNull: false,
-    },
-    add: {
-      type: sequelize.INTEGER,
-      allowNull: false,
-    }
-  });
-};
+const FounderMatchModel = require('../models/founder.team.model')(FDB, sequelize);
 
 TeamModel.sync({force: false});
 MatchModel.sync({force: false});
@@ -91,7 +78,10 @@ exports.matchesStatusGameType = async () => {
   }
 };
 exports.matcheMaps = async () => {
-  let matchIds = await FounderMatchModel.findAll({attributes: ['hltvId'], where: {add: 1}, limit: vars.setLimitNum});
+  let founderMatches = await FounderMatchModel.findAll({attributes: ['hltvId'], where: {add: 1}, limit: vars.setLimitNum});
+  var matchIds = _.map(founderMatches, function (item) {
+    return item.hltvId;
+  });
   let urlsDatas = await MatchModel.findAll({where: {hltvId: {$in: matchIds}}});
   for (let index = 0; index < urlsDatas.length; index++) {
     setTimeout(() => {
@@ -201,12 +191,14 @@ exports.matcheMaps = async () => {
             playerId: team1PlayerIds[i],
             playerName: team1PlayerNames[i],
             playerFlag: team1PlayerFlags[i],
+            playerCountry: team2PlayerCountries[i],
             playerAvatar: team1Imgs[i]
           });
           match.team2Players.push({
             playerId: team2PlayerIds[i],
             playerName: team2PlayerNames[i],
             playerFlag: team2PlayerFlags[i],
+            playerCountry: team2PlayerCountries[i],
             playerAvatar: team2Imgs[i]
           })
         }

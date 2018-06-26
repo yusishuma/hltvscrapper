@@ -185,6 +185,7 @@ exports.teamsPlayers = async () => {
               let item = {};
               item.avatar = $(f).find('img.container-width').attr('src');
               item.flag = $(f).find('img.flag').attr('src');
+              item.country = $(f).find('img.flag').attr('title');
               item.name = $(f).find('div.text-ellipsis').text();
               item.date = $(e).children('div.lineup-year').text().replace('Replace context with lineup', '');
               items.push(item);
