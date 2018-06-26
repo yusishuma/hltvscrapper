@@ -229,6 +229,7 @@ exports.matcheMaps = async () => {
           $(e).find('td').map((j, f) => {
             if (j === 0) {
               data.date = $(f).find('span').attr('data-unix');
+              data.matchId = $(f).find('a').attr('href').split('/')[2];
             }
             if (j === 1) {
               data.team1Id = $(f).find('a').attr('href').split('/')[2];
