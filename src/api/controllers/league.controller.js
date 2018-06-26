@@ -4,11 +4,27 @@
 const request = require('superagent');
 // const _ = require('lodash');
 const sequelize = require('sequelize');
-const DB = require('../../config/db');
+const DB = require('../../config/db').hltvDB;
+// const FDB = require('../../config/db').founderDB;
 const LeagueModel = require('../models/league.model')(DB, sequelize);
 const vars = require('../../config/vars');
 const qlimit = require('qlimit')(10);
 const cheerio = require('cheerio');
+// const FounderLeagueModel = (sequelize) => {
+//   return FDB.define('dedicate_match', {
+//     hltvId: {
+//       type: sequelize.INTEGER
+//     },
+//     name: {
+//       type: sequelize.STRING,
+//       allowNull: false,
+//     },
+//     add: {
+//       type: sequelize.INTEGER,
+//       allowNull: false,
+//     }
+//   });
+// };
 
 LeagueModel.sync({force: false});
 

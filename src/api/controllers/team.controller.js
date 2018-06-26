@@ -4,19 +4,34 @@
 const request = require('superagent');
 // const _ = require('lodash');
 const sequelize = require('sequelize');
-const DB = require('../../config/db');
+const DB = require('../../config/db').hltvDB;
+const FDB = require('../../config/db').founderDB;
 const TeamModel = require('../models/team.model')(DB, sequelize);
 const TMHISTORIESModel = require('../models/tmhistroy.model')(DB, sequelize);
 const vars = require('../../config/vars');
 const qlimit = require('qlimit')(10);
 const cheerio = require('cheerio');
 const moment = require('moment');
-
+const FounderTeamModel = (sequelize) => {
+  return FDB.define('dedicate_team', {
+    hltvId: {
+      type: sequelize.INTEGER
+    },
+    name: {
+      type: sequelize.STRING,
+      allowNull: false,
+    },
+    add: {
+      type: sequelize.INTEGER,
+      allowNull: false,
+    }
+  });
+};
 TMHISTORIESModel.sync({force: false});
 
 exports.teamsMatches = async () => {
   try {
-    let teams = await TeamModel.findAll({where: {isUpdateMatch: false}, limit: vars.setLimitNum});
+    let teams = await FounderTeamModel.findAll({where: {add: 1}, limit: vars.setLimitNum});
     for (let index = 0; index < teams.length; index++) {
       setTimeout(() => {
         let team = teams[index];
@@ -112,7 +127,7 @@ exports.teamsMatches = async () => {
 };
 exports.teamsMapRates = async () => {
   try {
-    let teams = await TeamModel.findAll({where: {mapsRates: {$eq: null}}, limit: vars.setLimitNum});
+    let teams = await FounderTeamModel.findAll({where: {add: 1}, limit: vars.setLimitNum});
     for (let index = 0; index < teams.length; index++) {
       setTimeout(() => {
         let team = teams[index];
@@ -171,7 +186,7 @@ exports.teamsMapRates = async () => {
 };
 exports.teamsPlayers = async () => {
   try {
-    let teams = await TeamModel.findAll({where: {mapsRates: {$eq: null}}, limit: vars.setLimitNum});
+    let teams = await FounderTeamModel.findAll({where: {add: 1}, limit: vars.setLimitNum});
     for (let index = 0; index < teams.length; index++) {
       setTimeout(() => {
         let team = teams[index];
@@ -207,7 +222,7 @@ exports.teamsPlayers = async () => {
 };
 exports.teamsRanking = async () => {
   try {
-    let teams = await TeamModel.findAll({where: {ranking: {$eq: null}}, limit: vars.setLimitNum});
+    let teams = await FounderTeamModel.findAll({where: {add: 1}, limit: vars.setLimitNum});
     for (let index = 0; index < teams.length; index++) {
       setTimeout(() => {
         let team = teams[index];
@@ -236,63 +251,3 @@ exports.teamsRanking = async () => {
     return error;
   }
 };
-// const MapNames = {Cache:29, Cobblestone: 39, Dust2: 31, Inferno: 33, Mirage: 32, Nuke: 34, Overpass: 40, Train: 35};
-// exports.teamsMapRatesPistolrounds = async () => {
-//   try {
-//     let teams = await TeamModel.findAll({where: {mapsRates: {$eq: null}}, limit: vars.setLimitNum});
-//     for (let index = 0; index < teams.length; index++) {
-//       setTimeout(() => {
-//         let team = teams[index];
-//         let statusUrl = 'https://www.hltv.org/stats/teams/maps/' + team.hltvId + '/' + team.name;
-//         request.get(statusUrl).then((result) => {//https://www.hltv.org/stats/teams/map/39/8536/Ground%20Zero
-//           let $ = cheerio.load(result.res.text);
-//           let items = [];
-//           let itemsImgs = [];
-//           let itemsNames = [];
-//           let itemsRates = [];
-//           $('div.col').find('div.map-pool-map-holder').find('img.map-pool-map').map((i, e) => {
-//             itemsImgs.push($(e).attr('src'));
-//           });
-//           $('div.col').find('div.map-pool-map-holder').find('div.map-pool-map-name').map((i, e) => {
-//             itemsNames.push($(e).text());
-//           });
-//           $('div.col').find('div.stats-rows.standard-box').map((i, e) => {
-//             let rate = {};
-//             $(e).find('span').map((j, f) => {
-//               if (j === 1) {
-//                 rate.wdl = $(f).text();
-//               }
-//               if (j === 3) {
-//                 rate.wr = $(f).text();
-//               }
-//               if (j === 5) {
-//                 rate.tr = $(f).text();
-//               }
-//               if (j === 7) {
-//                 rate.rag = $(f).text();
-//               }
-//               if (j === 9) {
-//                 rate.rac = $(f).text();
-//               }
-//             });
-//             itemsRates.push(rate);
-//           });
-//           for (let i = 0; i < itemsNames.length; i++) {
-//             items.push({name: itemsNames[i], avatar: itemsImgs[i], rates: itemsRates[i]});
-//           }
-//           return TeamModel.update({
-//             mapsRates: JSON.stringify(items),
-//           }, {
-//             where: {
-//               hltvId: team.hltvId
-//             }
-//           });
-//         })
-//       }, vars.setTimeNum * index);
-//
-//     }
-//   } catch (error) {
-//     console.log(error);
-//     return error;
-//   }
-// };
