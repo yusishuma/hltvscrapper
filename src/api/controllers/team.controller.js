@@ -12,21 +12,7 @@ const vars = require('../../config/vars');
 const qlimit = require('qlimit')(10);
 const cheerio = require('cheerio');
 const moment = require('moment');
-const FounderTeamModel = (sequelize) => {
-  return FDB.define('dedicate_team', {
-    hltvId: {
-      type: sequelize.INTEGER
-    },
-    name: {
-      type: sequelize.STRING,
-      allowNull: false,
-    },
-    add: {
-      type: sequelize.INTEGER,
-      allowNull: false,
-    }
-  });
-};
+const FounderTeamModel = require('../models/founder.team.model')(FDB, sequelize);
 TMHISTORIESModel.sync({force: false});
 
 exports.teamsMatches = async () => {
