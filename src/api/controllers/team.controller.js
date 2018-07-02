@@ -183,6 +183,7 @@ exports.teamsPlayers = async () => {
           $('div.lineup-container').map((i, e) => {
             $(e).find('div.grid').find('div.col.teammate').map((j, f) => {
               let item = {};
+              item.id = $(f).find('img.container-width').attr('src').split('/')[6];
               item.avatar = $(f).find('img.container-width').attr('src');
               item.flag = $(f).find('img.flag').attr('src');
               item.country = $(f).find('img.flag').attr('title');
