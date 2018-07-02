@@ -222,8 +222,10 @@ exports.teamsRanking = async () => {
               ranking = $(e).find('a').text();
             }
           });
+
           return TeamModel.update({
             ranking: ranking,
+            country: $('div.team-country').text(),
           }, {
             where: {
               hltvId: team.hltvId

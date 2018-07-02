@@ -31,7 +31,6 @@ exports.teams = async () => {
               return TeamModel.create({
                 name: team.name,
                 newName: team.newName,
-                country: team.country,
                 avatarFile: team.avatarFile,
                 hltvId: team.hltvId,
                 cgbId: team.cgbId,
@@ -43,7 +42,6 @@ exports.teams = async () => {
               return TeamModel.update({
                 name: team.name,
                 newName: team.newName,
-                country: team.country,
                 avatarFile: team.avatarFile,
                 hltvId: team.hltvId,
                 cgbId: team.cgbId,
