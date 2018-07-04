@@ -12,7 +12,7 @@ exports.hltvDB = new Sequelize('hltv', 'node', 'node123456', {
     idle: 10000, // 如果一个线程 10 秒钟内没有被使用过的话，那么就释放线程
   },
 });
-exports.founderDB = new Sequelize('founder_bet8', 'node', 'node123456', {
+exports.founderDB = new Sequelize('founder_bet6', 'node', 'node123456', {
   host: '172.17.99.189', // 数据库地址
   dialect: 'mysql', // 指定连接的数据库类型
   pool: {
