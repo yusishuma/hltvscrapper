@@ -166,7 +166,7 @@ exports.matcheMaps = async () => {
               team1PlayerCountries.push($(f).attr('title'));
             })
           }
-          if (i === 0) {
+          if (i === 1) {
             $(e).find('div.text-ellipsis').map((j, f) => {
               team2PlayerNames.push($(f).text());
             });
