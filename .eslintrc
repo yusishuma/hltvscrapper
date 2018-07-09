@@ -7,6 +7,7 @@
     "no-multi-str": 0,
     "newline-per-chained-call": 0,
     "indent": "off",
+    "arrow-body-style": "off",
     "prefer-arrow-callback": "off"
   },
   "env": {

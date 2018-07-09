@@ -3,8 +3,8 @@
  */
 const Sequelize = require('sequelize');
 
-exports.hltvDB = new Sequelize('hltv', 'jingjibocai', 'jingbocai20171031', {
-  host: '39.106.24.22', // 数据库地址
+exports.hltvDB = new Sequelize('hltv', 'node', 'node123456', {
+  host: '172.17.99.189', // 数据库地址
   dialect: 'mysql', // 指定连接的数据库类型
   pool: {
     max: 5, // 连接池中最大连接数量
@@ -12,8 +12,8 @@ exports.hltvDB = new Sequelize('hltv', 'jingjibocai', 'jingbocai20171031', {
     idle: 10000, // 如果一个线程 10 秒钟内没有被使用过的话，那么就释放线程
   },
 });
-exports.founderDB = new Sequelize('founder_bet6', 'jingjibocai', 'jingbocai20171031', {
-  host: '39.106.24.22', // 数据库地址
+exports.founderDB = new Sequelize('founder_bet6', 'node', 'node123456', {
+  host: '172.17.99.189', // 数据库地址
   dialect: 'mysql', // 指定连接的数据库类型
   pool: {
     max: 5, // 连接池中最大连接数量
