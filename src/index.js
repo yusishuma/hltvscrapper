@@ -4,34 +4,12 @@ const { port, env } = require('./config/vars');
 const app = require('./config/express');
 const schedule = require('node-schedule');
 const Q = require('q');
-// const moment = require('moment');
+const moment = require('moment');
 const matchesDetial = require('./api/controllers/match.controller');
 const league = require('./api/controllers/league.controller');
 const team = require('./api/controllers/team.controller');
-// const cheerio = require('cheerio');
-// const request = require('superagent');
-// const _ = require('lodash');
 
-// request
-//   .get('https://www.hltv.org/stats/teams/maps/6922/Corvidae')
-//   .then((result) => {
-//     let $ = cheerio.load(result.res.text);
-//     $('div.lineup-container').map((i, e) => {
-//       $(e).find('div.lineup-year').find('span').text();
-//       $(e).find('div.grid').find('div.col.teammate').map((j, f) => {
-//         console.log( $(f).text(), '=======data==========', j);
-//         console.log( $(f).find('img.container-width').attr('src'), '=======data==========', j);
-//         console.log( $(f).find('img.flag').attr('src'), '=======data==========', j);
-//         console.log( $(f).find('div.text-ellipsis').text(), '=======data==========', j);
-//       })
-//       console.log(i, '=======data==========');
-//     });
-//   });
-// '*/15 * * * *'
-
-const matchesRule = new schedule.RecurrenceRule();
-matchesRule.minute = 15;
-schedule.scheduleJob(matchesRule, () => {
+schedule.scheduleJob('*/3 * * * *', () => {
   Q.fcall(() => {
     console.log('开始抓取teams');
     return matchesDetial.teams();
@@ -43,55 +21,62 @@ schedule.scheduleJob(matchesRule, () => {
     return matchesDetial.matchesStatusGameType();
   }).then(() => {
     console.log('开始抓取matcheMaps');
-    return matchesDetial.matcheMaps();
+    return matchesDetial.matcheMaps({
+      add: 1,
+      date: {'$lt': moment().valueOf() + 3600000},
+      status: {'$ne': 'completed'}
+    }, 29);
+  }).then(() => {
+    console.log('开始抓取matcheMaps');
+    return matchesDetial.matcheMaps({
+      add: 1,
+      date: {'$gt': moment().valueOf() + 3600000},
+      status: {'$ne': 'completed'}
+    }, 1);
   });
 });
+/**
+ * ====================================================================================================================
+ * @type {RecurrenceRule}
+ */
 
-const teamsMatchesRule = new schedule.RecurrenceRule();
-teamsMatchesRule.minute = 16;
-schedule.scheduleJob(teamsMatchesRule, function () {
+schedule.scheduleJob('0 * 7,8,9,10,11,12,13,14,15,16,17,19,20,21,22,23,0,1,2,3,4,5, * * ?', function () {
   return Q.fcall(function () {
     console.log('开始抓取teamsMatches');
-    return team.teamsMatches();
+    return team.teamsMatches().then((data) => {
+      return Q.fcall(function () {
+        setTimeout(() => {
+          return Q.fcall(function () {
+            console.log('开始抓取teamsMapRates');
+            return team.teamsMapRates(data);
+          });
+        }, 1000 * 5)
+      }).then(() => {
+        setTimeout(() => {
+          return Q.fcall(function () {
+            console.log('开始抓取teamsPlayers');
+            return team.teamsPlayers(data);
+          });
+        }, 1000 * 10);
+      }).then(() => {
+        setTimeout(() => {
+          return Q.fcall(function () {
+            console.log('开始抓取teamsRanking');
+            return team.teamsRanking(data);
+          });
+        }, 1000 * 15);
+      });
+    });
+
   });
 });
 
-const teamsMapRatesRule = new schedule.RecurrenceRule();
-teamsMapRatesRule.minute = 17;
-schedule.scheduleJob(teamsMapRatesRule, function () {
-  return Q.fcall(function () {
-    console.log('开始抓取teamsMapRates');
-    return team.teamsMapRates();
-  });
-});
-
-const teamsPlayersRule = new schedule.RecurrenceRule();
-teamsPlayersRule.minute = 19;
-schedule.scheduleJob(teamsPlayersRule, function () {
-  return Q.fcall(function () {
-    console.log('开始抓取teamsPlayers');
-    return team.teamsPlayers();
-  });
-});
-
-const teamsRankingRule = new schedule.RecurrenceRule();
-teamsRankingRule.minute = 19;
-schedule.scheduleJob(teamsRankingRule, function () {
-  return Q.fcall(function () {
-    console.log('开始抓取teamsRanking');
-    return team.teamsRanking();
-  });
-});
-
-const leaguesRule = new schedule.RecurrenceRule();
-leaguesRule.minute = 20;
-schedule.scheduleJob(leaguesRule, function () {
+schedule.scheduleJob('0 0 6,18 * * ?', function () {
   return Q.fcall(function () {
     console.log('开始抓取leagues');
     return league.leagues();
   });
 });
-
 
 // listen to requests
 app.listen(port, () => console.info(`server started on port ${port} (${env})`));

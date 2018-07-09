@@ -75,8 +75,8 @@ exports.matchesStatusGameType = async () => {
     return error;
   }
 };
-exports.matcheMaps = async () => {
-  let founderMatches = await FounderMatchModel.findAll({attributes: ['hltvId'], where: {add: 1}, limit: vars.setLimitNum});
+exports.matcheMaps = async (options, limit) => {
+  let founderMatches = await FounderMatchModel.findAll({attributes: ['hltvId'], where: options, limit: limit});
   var matchIds = _.map(founderMatches, function (item) {
     return item.hltvId.toString();
   });

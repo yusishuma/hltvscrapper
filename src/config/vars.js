@@ -17,6 +17,6 @@ module.exports = {
       : process.env.MONGO_URI,
   },
   logs: process.env.NODE_ENV === 'production' ? 'combined' : 'dev',
-  setTimeNum: 30000,
-  setLimitNum: 20,
+  setTimeNum: 6000,
+  setLimitNum: 29,
 };
