@@ -76,6 +76,12 @@ exports.matchesStatusGameType = async () => {
   }
 };
 exports.matcheMaps = async (options, limit) => {
+  let count  = await FounderMatchModel.findAll({attributes: ['hltvId'], where: options, limit: limit});
+  if(count === 0 && options.add === 1){
+    options.add = 6;
+  }else if(count === 0 && options.add === 6){
+    options.add = 1;
+  }
   let founderMatches = await FounderMatchModel.findAll({attributes: ['hltvId'], where: options, limit: limit});
   var matchIds = _.map(founderMatches, function (item) {
     return item.hltvId.toString();

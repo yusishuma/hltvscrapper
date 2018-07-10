@@ -8,6 +8,9 @@
     "newline-per-chained-call": 0,
     "indent": "off",
     "arrow-body-style": "off",
+    "object-curly-spacing": "off",
+    "quote-props": "off",
+    "max-len": "off",
     "prefer-arrow-callback": "off"
   },
   "env": {
