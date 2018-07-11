@@ -169,24 +169,58 @@ exports.teamsMapRates = async (team) => {
 };
 exports.teamsPlayers = async (team) => {
   try {
-    let statusUrl = 'https://www.hltv.org/stats/teams/lineups/' + team.hltvId + '/' + team.name;
+    let statusUrl = 'https://www.hltv.org/stats/teams/' + team.hltvId + '/' + team.name;
     request.get(statusUrl).then((result) => {
       let $ = cheerio.load(result.res.text);
-      let items = [];
-      $('div.lineup-container').map((i, e) => {
-        $(e).find('div.grid').find('div.col.teammate').map((j, f) => {
-          let item = {};
-          item.id = $(f).find('img.container-width').attr('src').split('/')[6];
-          item.avatar = $(f).find('img.container-width').attr('src');
-          item.flag = $(f).find('img.flag').attr('src');
-          item.country = $(f).find('img.flag').attr('title');
-          item.name = $(f).find('div.text-ellipsis').text();
-          item.date = $(e).children('div.lineup-year').text().replace('Replace context with lineup', '');
-          items.push(item);
-        });
+      let currentItems = [];
+      let historicItems = [];
+      let standinsItems = [];
+      $('div.grid').map((i, e) => {
+        if (i === 0) {
+          $(e).find('div.col.teammate').map((j, f) => {
+            if ($(f).text() !== '') {
+              let item = {};
+              item.id = $(f).find('img.container-width').attr('src').split('/')[6];
+              item.avatar = $(f).find('img.container-width').attr('src');
+              item.flag = $(f).find('img.flag').attr('src');
+              item.country = $(f).find('img.flag').attr('title');
+              item.name = $(f).find('div.text-ellipsis').text();
+              item.date = $(e).children('div.lineup-year').text().replace('Replace context with lineup', '');
+              currentItems.push(item);
+            }
+          });
+        }
+        if (i === 1) {
+          $(e).find('div.col.teammate').map((j, f) => {
+            if ($(f).text() !== '') {
+              let item = {};
+              item.id = $(f).find('img.container-width').attr('src').split('/')[6];
+              item.avatar = $(f).find('img.container-width').attr('src');
+              item.flag = $(f).find('img.flag').attr('src');
+              item.country = $(f).find('img.flag').attr('title');
+              item.name = $(f).find('div.text-ellipsis').text();
+              item.date = $(e).children('div.lineup-year').text().replace('Replace context with lineup', '');
+              historicItems.push(item);
+            }
+          });
+        }
+        if (i === 2) {
+          $(e).find('div.col.teammate').map((j, f) => {
+            if ($(f).text() !== '') {
+              let item = {};
+              item.id = $(f).find('img.container-width').attr('src').split('/')[6];
+              item.avatar = $(f).find('img.container-width').attr('src');
+              item.flag = $(f).find('img.flag').attr('src');
+              item.country = $(f).find('img.flag').attr('title');
+              item.name = $(f).find('div.text-ellipsis').text();
+              item.date = $(e).children('div.lineup-year').text().replace('Replace context with lineup', '');
+              standinsItems.push(item);
+            }
+          });
+        }
       });
       return TeamModel.update({
-        players: JSON.stringify(items),
+        players: JSON.stringify({Current: currentItems, Historic: historicItems, Standins: standinsItems}),
       }, {
         where: {
           hltvId: team.hltvId
