@@ -211,6 +211,7 @@ exports.matcheMaps = async (options, limit) => {
           $('div.stream-box-embed').map((i, e) => {
             match.videoSrc.push({
               name: $(e).find('span.flagAlign').text(),
+              country: $(e).find('img.stream-flag.flag').attr('title'),
               videoUrl: $(e).attr('data-stream-embed')
             })
           });
