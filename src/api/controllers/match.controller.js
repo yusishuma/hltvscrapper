@@ -195,7 +195,7 @@ exports.matcheMaps = async (options, limit) => {
             playerId: team1PlayerIds[i],
             playerName: team1PlayerNames[i],
             playerFlag: team1PlayerFlags[i],
-            playerCountry: team2PlayerCountries[i],
+            playerCountry: team1PlayerCountries[i],
             playerAvatar: team1Imgs[i]
           });
           match.team2Players.push({
