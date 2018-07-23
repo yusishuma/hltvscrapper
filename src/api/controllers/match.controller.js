@@ -365,19 +365,16 @@ exports.matches = async () => {
             return MatchModel.update(match, {where: {hltvId: match.hltvId}});
           }
         }).then(() => {
-          return LeagueModel.count({where: {hltvId: match.leagueId}}).then((count) => {
+          let leagueId = match.leagueId || null;
+          return LeagueModel.count({where: {hltvId: leagueId}}).then((count) => {
             if (count === 0) {
               return LeagueModel.create({
-                hltvId: match.leagueId,
+                hltvId: leagueId,
                 name: match.leagueName,
                 avatar: match.leagueLogo
               });
             } else {
-              return LeagueModel.update({
-                hltvId: match.leagueId,
-                name: match.leagueName,
-                avatar: match.leagueLogo
-              }, {where: {hltvId: match.leagueId}});
+              return null;
             }
           })
         }).then(() => {

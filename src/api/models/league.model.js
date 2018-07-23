@@ -10,7 +10,7 @@ module.exports = function (DB, DataTypes) {
     },
     period: {
       type: DataTypes.STRING,
-      allowNull: false,
+      // allowNull: false,
     },
     status: {
       type: DataTypes.STRING,
