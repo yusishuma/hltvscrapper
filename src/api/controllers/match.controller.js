@@ -9,6 +9,7 @@ const DB = require('../../config/db').hltvDB;
 const FDB = require('../../config/db').founderDB;
 const TeamModel = require('../models/team.model')(DB, sequelize);
 const MatchModel = require('../models/match.model')(DB, sequelize);
+const LeagueModel = require('../models/league.model')(DB, sequelize);
 const Q = require('q');
 const qlimit = require('qlimit')(10);
 const cheerio = require('cheerio');
@@ -363,6 +364,22 @@ exports.matches = async () => {
           } else {
             return MatchModel.update(match, {where: {hltvId: match.hltvId}});
           }
+        }).then(() => {
+          return LeagueModel.count({where: {hltvId: match.leagueId}}).then((count) => {
+            if (count === 0) {
+              return LeagueModel.create({
+                hltvId: match.leagueId,
+                name: match.leagueName,
+                avatar: match.leagueLogo
+              });
+            } else {
+              return LeagueModel.update({
+                hltvId: match.leagueId,
+                name: match.leagueName,
+                avatar: match.leagueLogo
+              }, {where: {hltvId: match.leagueId}});
+            }
+          })
         }).then(() => {
           let teams = [];
           if (match.team1Id) {

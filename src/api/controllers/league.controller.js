@@ -79,17 +79,17 @@ exports.leagues = async () => {
                 let league = {};
                 let teams = [];
                 $("table.info").find('td').map(function (i, e) {
-                  if (i === 4) {
+                  if (i === 0) {
                     league.period = $(e).text()
                   }
-                  if (i === 5) {
+                  if (i === 1) {
                     league.prizePool = $(e).text()
                   }
-                  if (i === 6) {
+                  if (i === 2) {
                     league.teamsSum = $(e).text()
                   }
-                  if (i === 7) {
-                    league.location = $(e).text()
+                  if (i === 3) {
+                    league.location = $(e).text().replace(/[\r\n]/g, "").trim()
                   }
                 });
                 $("div.col").map(function (i, e) {
