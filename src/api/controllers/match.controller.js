@@ -77,10 +77,10 @@ exports.matchesStatusGameType = async () => {
   }
 };
 exports.matcheMaps = async (options, limit) => {
-  let count  = await FounderMatchModel.findAll({attributes: ['hltvId'], where: options, limit: limit});
-  if(count === 0 && options.add === 1){
+  let count = await FounderMatchModel.count({attributes: ['hltvId'], where: options, limit: limit});
+  if (count === 0 && options.add === 1) {
     options.add = 6;
-  }else if(count === 0 && options.add === 6){
+  } else if (count === 0 && options.add === 6) {
     options.add = 1;
   }
   let founderMatches = await FounderMatchModel.findAll({attributes: ['hltvId'], where: options, limit: limit});
@@ -107,8 +107,8 @@ exports.matcheMaps = async (options, limit) => {
         $("div.standard-box.teamsBox").map(function (i, e) {
           match.date = moment(parseInt($(e).find('.time').attr('data-unix')));
           match.matchDescription = $(e).find('div.text').text();
-          match.team1Score = $(e).find('div.team1-gradient').children('div').text() || 0;
-          match.team2Score = $(e).find('div.team2-gradient').children('div').text() || 0;
+          match.team1Score = $(e).find('div.team1-gradient').children('a').text() ? $(e).find('div.team1-gradient').children('div').text() : 0;
+          match.team2Score = $(e).find('div.team2-gradient').children('a').text() ? $(e).find('div.team2-gradient').children('div').text() : 0;
 
         });
         $("div.mapholder").map(function (i, e) {
@@ -120,6 +120,9 @@ exports.matcheMaps = async (options, limit) => {
             }
             if (a === 1) {
               mapDetail.mapScore = $(this).text();
+              if ($(this).find('a').length > 0) {
+                mapDetail.mapStatusUrl = $(this).find('a').attr('href');
+              }
             }
             mapDetails.push(mapDetail);
           })
@@ -157,38 +160,51 @@ exports.matcheMaps = async (options, limit) => {
         let team2PlayerFlags = [];
         let team2PlayerCountries = [];
         let team2PlayerIds = [];
-        $('div.players').map((i, e) => {
-          if (i === 0) {
-            $(e).find('div.text-ellipsis').map((j, f) => {
-              team1PlayerNames.push($(f).text());
-            });
-            $(e).find('a').map((j, f) => {
-              team1PlayerIds.push($(f).attr('href').split('/')[2]);
-            });
-            $(e).find('img.player-photo').map((j, f) => {
-              team1Imgs.push($(f).attr('src'));
-            });
-            $(e).find('img.flag.gtSmartphone-only').map((j, f) => {
-              team1PlayerFlags.push($(f).attr('src'));
-              team1PlayerCountries.push($(f).attr('title'));
-            })
-          }
-          if (i === 1) {
-            $(e).find('div.text-ellipsis').map((j, f) => {
-              team2PlayerNames.push($(f).text());
-            });
-            $(e).find('a').map((j, f) => {
-              team2PlayerIds.push($(f).attr('href').split('/')[2]);
-            });
-            $(e).find('img.player-photo').map((j, f) => {
-              team2Imgs.push($(f).attr('src'));
-            });
-            $(e).find('img.flag.gtSmartphone-only').map((j, f) => {
-              team2PlayerFlags.push($(f).attr('src'));
-              team2PlayerCountries.push($(f).attr('title'));
-            })
-          }
-        });
+        if ($('div.players').length > 0) {
+          $('div.players').map((i, e) => {
+            if (i === 0) {
+              $(e).find('div.text-ellipsis').map((j, f) => {
+                team1PlayerNames.push($(f).text());
+              });
+              $(e).find('a').map((j, f) => {
+                if (!$(f).attr('href')) {
+                  team1PlayerIds.push('');
+                } else {
+                  team1PlayerIds.push($(f).attr('href').split('/')[2]);
+
+                }
+              });
+              $(e).find('img.player-photo').map((j, f) => {
+                team1Imgs.push($(f).attr('src'));
+              });
+              $(e).find('img.flag.gtSmartphone-only').map((j, f) => {
+                team1PlayerFlags.push($(f).attr('src'));
+                team1PlayerCountries.push($(f).attr('title'));
+              })
+            }
+            if (i === 1) {
+              $(e).find('div.text-ellipsis').map((j, f) => {
+                team2PlayerNames.push($(f).text());
+              });
+              $(e).find('a').map((j, f) => {
+                if (!$(f).attr('href')) {
+                  team2PlayerIds.push('');
+                } else {
+                  team2PlayerIds.push($(f).attr('href').split('/')[2]);
+
+                }
+              });
+              $(e).find('img.player-photo').map((j, f) => {
+                team2Imgs.push($(f).attr('src'));
+              });
+              $(e).find('img.flag.gtSmartphone-only').map((j, f) => {
+                team2PlayerFlags.push($(f).attr('src'));
+                team2PlayerCountries.push($(f).attr('title'));
+              })
+            }
+          });
+        }
+
         match.team1Players = [];
         match.team2Players = [];
         for (let i = 0; i < team1Imgs.length; i++) {
@@ -264,6 +280,7 @@ exports.matcheMaps = async (options, limit) => {
           });
           match.headToHead.push(data);
         });
+        let add = options.add === 1 ? 6 : 1;
         return MatchModel.update({
           hltvId: urlsData.hltvId,
           date: match.date.toString(),
@@ -283,9 +300,79 @@ exports.matcheMaps = async (options, limit) => {
           mapDes: mapDes,
           mapDetails: JSON.stringify(mapDetails),
           matchDescription: match.matchDescription
-        }, {where: {hltvId: urlsData.hltvId}});
+        }, {where: {hltvId: urlsData.hltvId}}).then(() => {
+          return FounderMatchModel.update({add: add}, {where: {hltvId: urlsData.hltvId}});
+        });
       })
     }, vars.setTimeNum * index);
+  }
+};
+exports.matchesMapStatus = async (options) => {
+  let count = await FounderMatchModel.count({attributes: ['hltvId'], where: options});
+  if (count === 0 && options.add === 1) {
+    options.add = 6;
+  } else if (count === 0 && options.add === 6) {
+    options.add = 1;
+  }
+  let founderMatch = await FounderMatchModel.findOne({attributes: ['hltvId'], where: options});
+  var matchIds = [founderMatch.hltvId.toString()];
+  let match = await MatchModel.findOne({where: {hltvId: founderMatch.hltvId.toString()}});
+  if (match.mapDetails && JSON.parse(match.mapDetails).length > 0) {
+    let urlsDatas = JSON.parse(match.mapDetails);
+    for (let index = 0; index < urlsDatas.length; index++) {
+      setTimeout(() => {
+        let urlsData = urlsDatas[index];
+        if (urlsData) {
+          let team1_first_half = [];
+          let team2_first_half = [];
+          let team1_second_half = [];
+          let team2_second_half = [];
+          request.get('https://www.hltv.org/stats/matches/mapstatsid/' + urlsDatas.mapStatusUrl.split('/mapstatsid/')[1]).then((result) => {
+            // request.get('https://www.hltv.org/stats/matches/mapstatsid/70618/besiktas-vs-eparadise-angels').then((result) => {
+            let $ = cheerio.load(result.res.text);
+            $('div.round-history-team-row').map((i, e) => {
+              if (i === 0) {
+                $(e).find('div.round-history-half').map((j, f) => {
+                  if (j === 0) {
+                    $(f).find('img.round-history-outcome').map((k, g) => {
+                      team1_first_half.push(translateMapStatus($(g).attr('src')));
+                    })
+                  }
+                  if (j === 1) {
+                    $(f).find('img.round-history-outcome').map((k, g) => {
+                      team1_second_half.push(translateMapStatus($(g).attr('src')));
+                    })
+                  }
+                })
+              }
+              if (i === 1) {
+                $(e).find('div.round-history-half').map((j, f) => {
+                  if (j === 0) {
+                    $(f).find('img.round-history-outcome').map((k, g) => {
+                      team2_first_half.push(translateMapStatus($(g).attr('src')));
+                    })
+                  }
+                  if (j === 1) {
+                    $(f).find('img.round-history-outcome').map((k, g) => {
+                      team2_second_half.push(translateMapStatus($(g).attr('src')));
+                    })
+                  }
+                })
+              }
+            })
+          }).then(() => {
+            return MatchModel.findOne({where: {hltvId: {$in: matchIds}}}).then((data) => {
+              let mapDetails = JSON.parse(data.mapDetails);
+              mapDetails[index].team1_first_half = team1_first_half;
+              mapDetails[index].team2_first_half = team2_first_half;
+              mapDetails[index].team1_second_half = team1_second_half;
+              mapDetails[index].team2_second_half = team2_second_half;
+              return MatchModel.update({mapDetails: JSON.stringify(mapDetails)}, {where: {hltvId: {$in: matchIds}}});
+            });
+          });
+        }
+      }, vars.setTimeNum * index);
+    }
   }
 };
 exports.matches = async () => {
@@ -313,12 +400,12 @@ exports.matches = async () => {
             $(e).find('table.table').find('div.line-align').map((j, f) => {
               if (j === 0) {
                 match.team1Id = $(f).find('img.logo').attr('src').split('/logo/')[1];
-                match.team1Name = $(f).find('div.team').text();
+                match.team1Name = $(f).text().replace(/[\r\n]/g, "").trim();
                 match.team1Logo = $(f).find('img.logo').attr('src');
               }
               if (j === 1) {
                 match.team2Id = $(f).find('img.logo').attr('src').split('/logo/')[1];
-                match.team2Name = $(f).find('div.team').text();
+                match.team2Name = $(f).text().replace(/[\r\n]/g, "").trim();
                 match.team2Logo = $(f).find('img.logo').attr('src')
               }
             });
@@ -404,4 +491,21 @@ exports.matches = async () => {
         });
       })));
     })
+};
+
+let translateMapStatus = (url) => {
+  switch (url) {
+    case '//static.hltv.org/images/scoreboard/emptyHistory.svg':
+      return 0;
+    case '//static.hltv.org/images/scoreboard/ct_win.svg':
+      return 1;
+    case '//static.hltv.org/images/scoreboard/t_win.svg':
+      return 2;
+    case '//static.hltv.org/images/scoreboard/bomb_exploded.svg':
+      return 3;
+    case '//static.hltv.org/images/scoreboard/bomb_defused.svg':
+      return 4;
+    case '//static.hltv.org/images/scoreboard/stopwatch.svg':
+      return 5;
+  }
 };
