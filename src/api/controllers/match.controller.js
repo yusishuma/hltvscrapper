@@ -1,7 +1,7 @@
 /**
  * Created by tonghema on 2018/5/28.
  */
-const request = require('superagent');
+const request = require('request');
 const vars = require('../../config/vars');
 const _ = require('lodash');
 const sequelize = require('sequelize');
@@ -10,67 +10,29 @@ const FDB = require('../../config/db').founderDB;
 const TeamModel = require('../models/team.model')(DB, sequelize);
 const MatchModel = require('../models/match.model')(DB, sequelize);
 const LeagueModel = require('../models/league.model')(DB, sequelize);
+const ProxyModel = require('../models/proxy.model')(DB, sequelize);
 const Q = require('q');
 const qlimit = require('qlimit')(10);
 const cheerio = require('cheerio');
 const moment = require('moment');
 const FounderMatchModel = require('../models/founder.match.model')(FDB, sequelize);
+const HttpsProxyAgent = require('https-proxy-agent');
 
 TeamModel.sync({force: false});
 MatchModel.sync({force: false});
+ProxyModel.sync({force: false});
 
-exports.teams = async () => {
+exports.updateProxy = async () => {
   try {
-    return request
-      .get('https://hltv.gainskins.com/api/tours/')
-      .then((result) => {
-        const data = result;
-        return Q.all(data.body.playerTeams.map(qlimit((item) => {
-          const team = item;
-          return TeamModel.count({where: {hltvId: team.hltvId}}).then((count) => {
-            if (count === 0 && team.hltvId) {
-              return TeamModel.create({
-                name: team.name,
-                newName: team.newName,
-                avatarFile: team.avatarFile,
-                hltvId: team.hltvId,
-                cgbId: team.cgbId,
-                gameType: 'cs:go',
-              }).catch(function (result) {
-                console.log(result);
-              });
-            } else if (team.hltvId) {
-              return TeamModel.update({
-                name: team.name,
-                newName: team.newName,
-                avatarFile: team.avatarFile,
-                hltvId: team.hltvId,
-                cgbId: team.cgbId,
-                gameType: 'cs:go',
-              }, {where: {hltvId: team.hltvId}});
-            }
-          })
-        })));
-      });
-  } catch (error) {
-    return error;
-  }
-};
-exports.matchesStatusGameType = async () => {
-  try {
-    let data = {};
-    return request
-      .get('https://hltv.gainskins.com/api/tours/')
-      .then((result) => {
-        data = result;
-        return Q.all(data.body.tours.map(qlimit((item) => {
-          return MatchModel.update({
-            gameType: item.gameType,
-            status: item.status
-          }, {
-            where: {hltvId: item.hltvId}
-          });
-        })));
+    request
+      .get({url: 'http://webapi.http.zhimacangku.com/getip?num=1&type=1&pro=0&city=0&yys=0&port=1&pack=26094&ts=0&ys=0&cs=0&lb=1&sb=0&pb=4&mr=1&regions='}, (err, res, data) => {
+        return TeamModel.create({
+          proxy: data,
+        }).catch(function (result) {
+          console.log(result);
+        }).then(() => {
+          TeamModel.destroy({where: {proxy: {'$ne': data} }})
+        });
       });
   } catch (error) {
     return error;
@@ -87,12 +49,15 @@ exports.matcheMaps = async (options, limit) => {
   var matchIds = _.map(founderMatches, function (item) {
     return item.hltvId.toString();
   });
+  let proxy = await ProxyModel.findOne();
+  let agent = new HttpsProxyAgent(proxy.proxy);
+
   let urlsDatas = await MatchModel.findAll({where: {hltvId: {$in: matchIds}}, limit: vars.setLimitNum});
   for (let index = 0; index < urlsDatas.length; index++) {
     setTimeout(() => {
       let urlsData = urlsDatas[index];
-      request.get('https://www.hltv.org' + urlsData.matchDetialUrl).then((data) => {
-        let $ = cheerio.load(data.res.text);
+      request.get({url: 'https://www.hltv.org' + urlsData.matchDetialUrl, agent: agent}, (err, res, data) => {
+        let $ = cheerio.load(data);
         let mapBoDes = $("div.padding.preformatted-text").html();
         let mapDes = '';
         let mapDetails = [];
@@ -316,6 +281,8 @@ exports.matchesMapStatus = async (options) => {
   }
   let founderMatch = await FounderMatchModel.findOne({attributes: ['hltvId'], where: options});
   var matchIds = [founderMatch.hltvId.toString()];
+  let proxy = await ProxyModel.findOne();
+  let agent = new HttpsProxyAgent(proxy.proxy);
   let match = await MatchModel.findOne({where: {hltvId: founderMatch.hltvId.toString()}});
   if (match.mapDetails && JSON.parse(match.mapDetails).length > 0) {
     let urlsDatas = JSON.parse(match.mapDetails);
@@ -327,9 +294,9 @@ exports.matchesMapStatus = async (options) => {
           let team2_first_half = [];
           let team1_second_half = [];
           let team2_second_half = [];
-          request.get('https://www.hltv.org/stats/matches/mapstatsid/' + urlsDatas.mapStatusUrl.split('/mapstatsid/')[1]).then((result) => {
+          request.get({url:'https://www.hltv.org/stats/matches/mapstatsid/' + urlsDatas.mapStatusUrl.split('/mapstatsid/')[1], agent: agent}, (err, res, result) => {
             // request.get('https://www.hltv.org/stats/matches/mapstatsid/70618/besiktas-vs-eparadise-angels').then((result) => {
-            let $ = cheerio.load(result.res.text);
+            let $ = cheerio.load(result);
             $('div.round-history-team-row').map((i, e) => {
               if (i === 0) {
                 $(e).find('div.round-history-half').map((j, f) => {
@@ -359,8 +326,7 @@ exports.matchesMapStatus = async (options) => {
                   }
                 })
               }
-            })
-          }).then(() => {
+            });
             return MatchModel.findOne({where: {hltvId: {$in: matchIds}}}).then((data) => {
               let mapDetails = JSON.parse(data.mapDetails);
               mapDetails[index].team1_first_half = team1_first_half;
@@ -376,10 +342,11 @@ exports.matchesMapStatus = async (options) => {
   }
 };
 exports.matches = async () => {
+  let proxy = await ProxyModel.findOne();
+  let agent = new HttpsProxyAgent(proxy.proxy);
   request
-    .get('https://www.hltv.org/matches')
-    .then((result) => {
-      let $ = cheerio.load(result.res.text);
+    .get({url:'https://www.hltv.org/matches', agent: agent}, (err, res, result) => {
+      let $ = cheerio.load(result);
       let urlsDatas = [];
       $("div.upcoming-matches").find('a.a-reset.block.upcoming-match.standard-box').map(function (i, e) {
         if ($(e).attr("href").search(/matches\//) > 0) {

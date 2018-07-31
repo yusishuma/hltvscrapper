@@ -1,7 +1,7 @@
 /**
  * Created by tonghema on 2018/6/5.
  */
-const request = require('superagent');
+const request = require('request');
 // const _ = require('lodash');
 const sequelize = require('sequelize');
 const DB = require('../../config/db').hltvDB;
@@ -15,14 +15,18 @@ const cheerio = require('cheerio');
 const moment = require('moment');
 const FounderTeamModel = require('../models/founder.team.model')(FDB, sequelize);
 TMHISTORIESModel.sync({force: false});
+const HttpsProxyAgent = require('https-proxy-agent');
+const ProxyModel = require('../models/proxy.model')(DB, sequelize);
 
 exports.teamsMatches = async () => {
   try {
+    let proxy = await ProxyModel.findOne();
+    let agent = new HttpsProxyAgent(proxy.proxy);
     let teams = await FounderTeamModel.findAll({where: {add: 1}, limit: 1});
     let team = teams[0];
     let statusUrl = 'https://www.hltv.org/stats/teams/matches/' + team.hltvId + '/' + team.name;
-    return request.get(statusUrl).then((result) => {
-      let $ = cheerio.load(result.res.text);
+    return request.get({url: statusUrl, agent: agent}, (err, res, result) => {
+      let $ = cheerio.load(result);
       let item = {};
       $("tbody").find('tr').map((i, e) => {
         $(e).find('td').map((j, f) => {
@@ -50,6 +54,9 @@ exports.teamsMatches = async () => {
           }
         })
       });
+      if (!item.opponentId || !item.date) {
+        return null;
+      }
       return TMHISTORIESModel.count({
         where: {
           teamId: team.hltvId,
@@ -117,9 +124,11 @@ exports.teamsMatches = async () => {
 };
 exports.teamsMapRates = async (team) => {
   try {
+    let proxy = await ProxyModel.findOne();
+    let agent = new HttpsProxyAgent(proxy.proxy);
     let statusUrl = 'https://www.hltv.org/stats/teams/maps/' + team.hltvId + '/' + team.name;
-    request.get(statusUrl).then((result) => {
-      let $ = cheerio.load(result.res.text);
+    return request.get({url: statusUrl, agent: agent}, (err, res, result) => {
+      let $ = cheerio.load(result);
       let items = [];
       let itemsImgs = [];
       let itemsNames = [];
@@ -169,8 +178,10 @@ exports.teamsMapRates = async (team) => {
 };
 exports.teamsPlayers = async (team) => {
   try {
+    let proxy = await ProxyModel.findOne();
+    let agent = new HttpsProxyAgent(proxy.proxy);
     let statusUrl = 'https://www.hltv.org/stats/teams/' + team.hltvId + '/' + team.name;
-    request.get(statusUrl).then((result) => {
+    return request.get({url: statusUrl, agent: agent}, (err, res, result) => {
       let $ = cheerio.load(result.res.text);
       let currentItems = [];
       let historicItems = [];
@@ -235,10 +246,11 @@ exports.teamsPlayers = async (team) => {
 };
 exports.teamsRanking = async (team) => {
   try {
-
+    let proxy = await ProxyModel.findOne();
+    let agent = new HttpsProxyAgent(proxy.proxy);
     let statusUrl = 'https://www.hltv.org/team/' + team.hltvId + '/' + team.name.toLowerCase().replace(/ /g, "-");
-    request.get(statusUrl).then((result) => {
-      let $ = cheerio.load(result.res.text);
+    return request.get({url: statusUrl, agent: agent}, (err, res, result) => {
+      let $ = cheerio.load(result);
       let ranking = '';
       $('div.profile-team-stat').map((i, e) => {
         if (i === 0) {

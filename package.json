@@ -75,6 +75,7 @@
     "express-validation": "^1.0.2",
     "helmet": "^3.5.0",
     "http-status": "^1.0.1",
+    "https-proxy-agent": "^2.2.1",
     "joi": "^10.4.1",
     "jwt-simple": "0.5.1",
     "lodash": "^4.17.4",
@@ -91,6 +92,7 @@
     "pm2": "^2.4.6",
     "q": "^1.5.1",
     "qlimit": "^0.1.1",
+    "request": "^2.87.0",
     "sequelize": "^4.37.8",
     "superagent": "^3.8.3",
     "uuid": "^3.1.0"

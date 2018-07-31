@@ -1,7 +1,7 @@
 /**
  * Created by tonghema on 2018/5/30.
  */
-const request = require('superagent');
+const request = require('request');
 // const _ = require('lodash');
 const sequelize = require('sequelize');
 const DB = require('../../config/db').hltvDB;
@@ -10,30 +10,19 @@ const LeagueModel = require('../models/league.model')(DB, sequelize);
 const vars = require('../../config/vars');
 const qlimit = require('qlimit')(10);
 const cheerio = require('cheerio');
-// const FounderLeagueModel = (sequelize) => {
-//   return FDB.define('dedicate_match', {
-//     hltvId: {
-//       type: sequelize.INTEGER
-//     },
-//     name: {
-//       type: sequelize.STRING,
-//       allowNull: false,
-//     },
-//     add: {
-//       type: sequelize.INTEGER,
-//       allowNull: false,
-//     }
-//   });
-// };
+const HttpsProxyAgent = require('https-proxy-agent');
+const ProxyModel = require('../models/proxy.model')(DB, sequelize);
+
 
 LeagueModel.sync({force: false});
 
 exports.leagues = async () => {
   try {
+    let proxy = await ProxyModel.findOne();
+    let agent = new HttpsProxyAgent(proxy.proxy);
     await request
-      .get('https://www.hltv.org/events#tab-ALL')
-      .then((result) => {
-        let $ = cheerio.load(result.res.text);
+      .get({url:'https://www.hltv.org/events#tab-ALL', agent: agent},(err, res, result) => {
+        let $ = cheerio.load(result);
         let data = [];
         $("a.a-reset.ongoing-event").map(function (i, e) {
           let itemData = {url: $(e).attr('href')};
@@ -74,8 +63,8 @@ exports.leagues = async () => {
             let item = data[index];
             let hltvId = item.url.split('/')[2];
             return request
-              .get('https://www.hltv.org' + item.url).then((leagueData) => {
-                let $ = cheerio.load(leagueData.res.text);
+              .get({url:'https://www.hltv.org' + item.url, agent: agent},(err, res, leagueData) => {
+                let $ = cheerio.load(leagueData);
                 let league = {};
                 let teams = [];
                 $("table.info").find('td').map(function (i, e) {
