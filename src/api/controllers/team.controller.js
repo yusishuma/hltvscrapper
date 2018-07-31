@@ -17,11 +17,12 @@ const FounderTeamModel = require('../models/founder.team.model')(FDB, sequelize)
 TMHISTORIESModel.sync({force: false});
 const HttpsProxyAgent = require('https-proxy-agent');
 const ProxyModel = require('../models/proxy.model')(DB, sequelize);
+const options_proxy = {type: 1};
 
 exports.teamsMatches = async () => {
   try {
-    let proxy = await ProxyModel.findOne();
-    let agent = new HttpsProxyAgent(proxy.proxy);
+    let proxy = await ProxyModel.findOne(options_proxy);
+    let agent = new HttpsProxyAgent('http://'+proxy.ip+':'+proxy.port);
     let teams = await FounderTeamModel.findAll({where: {add: 1}, limit: 1});
     let team = teams[0];
     let statusUrl = 'https://www.hltv.org/stats/teams/matches/' + team.hltvId + '/' + team.name;
@@ -124,8 +125,8 @@ exports.teamsMatches = async () => {
 };
 exports.teamsMapRates = async (team) => {
   try {
-    let proxy = await ProxyModel.findOne();
-    let agent = new HttpsProxyAgent(proxy.proxy);
+    let proxy = await ProxyModel.findOne(options_proxy);
+    let agent = new HttpsProxyAgent('http://'+proxy.ip+':'+proxy.port);
     let statusUrl = 'https://www.hltv.org/stats/teams/maps/' + team.hltvId + '/' + team.name;
     return request.get({url: statusUrl, agent: agent}, (err, res, result) => {
       let $ = cheerio.load(result);
@@ -178,8 +179,8 @@ exports.teamsMapRates = async (team) => {
 };
 exports.teamsPlayers = async (team) => {
   try {
-    let proxy = await ProxyModel.findOne();
-    let agent = new HttpsProxyAgent(proxy.proxy);
+    let proxy = await ProxyModel.findOne(options_proxy);
+    let agent = new HttpsProxyAgent('http://'+proxy.ip+':'+proxy.port);
     let statusUrl = 'https://www.hltv.org/stats/teams/' + team.hltvId + '/' + team.name;
     return request.get({url: statusUrl, agent: agent}, (err, res, result) => {
       let $ = cheerio.load(result.res.text);
@@ -246,8 +247,8 @@ exports.teamsPlayers = async (team) => {
 };
 exports.teamsRanking = async (team) => {
   try {
-    let proxy = await ProxyModel.findOne();
-    let agent = new HttpsProxyAgent(proxy.proxy);
+    let proxy = await ProxyModel.findOne(options_proxy);
+    let agent = new HttpsProxyAgent('http://'+proxy.ip+':'+proxy.port);
     let statusUrl = 'https://www.hltv.org/team/' + team.hltvId + '/' + team.name.toLowerCase().replace(/ /g, "-");
     return request.get({url: statusUrl, agent: agent}, (err, res, result) => {
       let $ = cheerio.load(result);

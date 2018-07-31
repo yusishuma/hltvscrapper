@@ -12,14 +12,15 @@ const qlimit = require('qlimit')(10);
 const cheerio = require('cheerio');
 const HttpsProxyAgent = require('https-proxy-agent');
 const ProxyModel = require('../models/proxy.model')(DB, sequelize);
+const options_proxy = {type: 1};
 
 
 LeagueModel.sync({force: false});
 
 exports.leagues = async () => {
   try {
-    let proxy = await ProxyModel.findOne();
-    let agent = new HttpsProxyAgent(proxy.proxy);
+    let proxy = await ProxyModel.findOne(options_proxy);
+    let agent = new HttpsProxyAgent('http://'+proxy.ip+':'+proxy.port);
     await request
       .get({url:'https://www.hltv.org/events#tab-ALL', agent: agent},(err, res, result) => {
         let $ = cheerio.load(result);

@@ -9,9 +9,7 @@ const app = require('./config/express');
 // const league = require('./api/controllers/league.controller');
 // const team = require('./api/controllers/team.controller');
 // const vars = require('./config/vars');
-// schedule.scheduleJob('*/30 * * * *', () => {
-//   matchesDetial.updateProxy();
-// });
+
 // schedule.scheduleJob('*/3 * * * *', () => {
 //   Q.fcall(() => {
 //     console.log('开始抓取matches');

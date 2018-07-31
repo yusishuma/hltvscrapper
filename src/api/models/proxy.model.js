@@ -3,16 +3,25 @@
  */
 // "use strict";
 module.exports = function (DB, DataTypes) {
-  return DB.define('proxy', {
-    proxy: {
-      type: DataTypes.STRING,
+  return DB.define('proxy_ip', {
+    id: {
+      type: DataTypes.INTEGER,
       primaryKey: true,
       allowNull: false,
+    },
+    ip: {
+      type: DataTypes.STRING,
+    },
+    port: {
+      type: DataTypes.INTEGER,
+    },
+    type: {
+      type: DataTypes.INTEGER,
     }
   }, {
     createdAt: true,
     updatedAt: false,
-    tableName: 'proxy',
+    tableName: 'proxy_ip',
   });
 };
 

@@ -21,23 +21,24 @@ const HttpsProxyAgent = require('https-proxy-agent');
 TeamModel.sync({force: false});
 MatchModel.sync({force: false});
 ProxyModel.sync({force: false});
+const options_proxy = {type: 1};
 
-exports.updateProxy = async () => {
-  try {
-    request
-      .get({url: 'http://webapi.http.zhimacangku.com/getip?num=1&type=1&pro=0&city=0&yys=0&port=1&pack=26094&ts=0&ys=0&cs=0&lb=1&sb=0&pb=4&mr=1&regions='}, (err, res, data) => {
-        return TeamModel.create({
-          proxy: data,
-        }).catch(function (result) {
-          console.log(result);
-        }).then(() => {
-          TeamModel.destroy({where: {proxy: {'$ne': data} }})
-        });
-      });
-  } catch (error) {
-    return error;
-  }
-};
+// exports.updateProxy = async () => {
+//   try {
+//     request
+//       .get({url: 'http://webapi.http.zhimacangku.com/getip?num=1&type=1&pro=0&city=0&yys=0&port=1&pack=26094&ts=0&ys=0&cs=0&lb=1&sb=0&pb=4&mr=2&regions='}, (err, res, data) => {
+//         return ProxyModel.create({
+//           proxy: 'http://'+data.replace('\r\n',''),
+//         }).catch(function (result) {
+//           console.log(result);
+//         }).then(() => {
+//           ProxyModel.destroy({where: {proxy: {'$ne': 'http://'+data.replace('\r\n','')} }})
+//         });
+//       });
+//   } catch (error) {
+//     return error;
+//   }
+// };
 exports.matcheMaps = async (options, limit) => {
   let count = await FounderMatchModel.count({attributes: ['hltvId'], where: options, limit: limit});
   if (count === 0 && options.add === 1) {
@@ -49,8 +50,8 @@ exports.matcheMaps = async (options, limit) => {
   var matchIds = _.map(founderMatches, function (item) {
     return item.hltvId.toString();
   });
-  let proxy = await ProxyModel.findOne();
-  let agent = new HttpsProxyAgent(proxy.proxy);
+  let proxy = await ProxyModel.findOne(options_proxy);
+  let agent = new HttpsProxyAgent('http://'+proxy.ip+':'+proxy.port);
 
   let urlsDatas = await MatchModel.findAll({where: {hltvId: {$in: matchIds}}, limit: vars.setLimitNum});
   for (let index = 0; index < urlsDatas.length; index++) {
@@ -281,8 +282,8 @@ exports.matchesMapStatus = async (options) => {
   }
   let founderMatch = await FounderMatchModel.findOne({attributes: ['hltvId'], where: options});
   var matchIds = [founderMatch.hltvId.toString()];
-  let proxy = await ProxyModel.findOne();
-  let agent = new HttpsProxyAgent(proxy.proxy);
+  let proxy = await ProxyModel.findOne(options_proxy);
+  let agent = new HttpsProxyAgent('http://'+proxy.ip+':'+proxy.port);
   let match = await MatchModel.findOne({where: {hltvId: founderMatch.hltvId.toString()}});
   if (match.mapDetails && JSON.parse(match.mapDetails).length > 0) {
     let urlsDatas = JSON.parse(match.mapDetails);
@@ -342,10 +343,12 @@ exports.matchesMapStatus = async (options) => {
   }
 };
 exports.matches = async () => {
-  let proxy = await ProxyModel.findOne();
-  let agent = new HttpsProxyAgent(proxy.proxy);
+  let proxy = await ProxyModel.findOne(options_proxy);
+  let agent = new HttpsProxyAgent(proxy);
   request
-    .get({url:'https://www.hltv.org/matches', agent: agent}, (err, res, result) => {
+    .get('https://www.hltv.org/matches', {agent: agent}, (err, res, result) => {
+    console.log(err)
+    console.log(res)
       let $ = cheerio.load(result);
       let urlsDatas = [];
       $("div.upcoming-matches").find('a.a-reset.block.upcoming-match.standard-box').map(function (i, e) {
