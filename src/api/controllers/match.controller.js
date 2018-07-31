@@ -420,7 +420,7 @@ exports.matches = async () => {
             return MatchModel.update(match, {where: {hltvId: match.hltvId}});
           }
         }).then(() => {
-          let leagueId = match.leagueId || null;
+          let leagueId = match.leagueId || 'null';
           return LeagueModel.count({where: {hltvId: leagueId}}).then((count) => {
             if (count === 0) {
               return LeagueModel.create({
