@@ -344,9 +344,9 @@ exports.matchesMapStatus = async (options) => {
 };
 exports.matches = async () => {
   let proxy = await ProxyModel.findOne(options_proxy);
-  let agent = new HttpsProxyAgent(proxy);
+  let agent = new HttpsProxyAgent('http://'+proxy.ip+':'+proxy.port);
   request
-    .get('https://www.hltv.org/matches', {agent: agent}, (err, res, result) => {
+    .get({url: 'https://www.hltv.org/matches', agent: agent}, (err, res, result) => {
       let $ = cheerio.load(result);
       let urlsDatas = [];
       $("div.upcoming-matches").find('a.a-reset.block.upcoming-match.standard-box').map(function (i, e) {

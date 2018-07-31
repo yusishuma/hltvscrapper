@@ -183,7 +183,7 @@ exports.teamsPlayers = async (team) => {
     let agent = new HttpsProxyAgent('http://'+proxy.ip+':'+proxy.port);
     let statusUrl = 'https://www.hltv.org/stats/teams/' + team.hltvId + '/' + team.name;
     return request.get({url: statusUrl, agent: agent}, (err, res, result) => {
-      let $ = cheerio.load(result.res.text);
+      let $ = cheerio.load(result);
       let currentItems = [];
       let historicItems = [];
       let standinsItems = [];
