@@ -347,8 +347,6 @@ exports.matches = async () => {
   let agent = new HttpsProxyAgent(proxy);
   request
     .get('https://www.hltv.org/matches', {agent: agent}, (err, res, result) => {
-    console.log(err)
-    console.log(res)
       let $ = cheerio.load(result);
       let urlsDatas = [];
       $("div.upcoming-matches").find('a.a-reset.block.upcoming-match.standard-box').map(function (i, e) {

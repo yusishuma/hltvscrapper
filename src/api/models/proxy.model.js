@@ -19,7 +19,7 @@ module.exports = function (DB, DataTypes) {
       type: DataTypes.INTEGER,
     }
   }, {
-    createdAt: true,
+    createdAt: false,
     updatedAt: false,
     tableName: 'proxy_ip',
   });
