@@ -12,8 +12,7 @@ const qlimit = require('qlimit')(10);
 const cheerio = require('cheerio');
 const HttpsProxyAgent = require('https-proxy-agent');
 const ProxyModel = require('../models/proxy.model')(DB, sequelize);
-const options_proxy = {type: 1};
-
+const options_proxy = {where: {type: 2}};
 
 LeagueModel.sync({force: false});
 

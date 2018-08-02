@@ -21,7 +21,7 @@ const HttpsProxyAgent = require('https-proxy-agent');
 TeamModel.sync({force: false});
 MatchModel.sync({force: false});
 ProxyModel.sync({force: false});
-const options_proxy = {type: 1};
+const options_proxy = {where: {type: 1}};
 
 // exports.updateProxy = async () => {
 //   try {

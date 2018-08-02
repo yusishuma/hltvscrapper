@@ -17,103 +17,104 @@ const FounderTeamModel = require('../models/founder.team.model')(FDB, sequelize)
 TMHISTORIESModel.sync({force: false});
 const HttpsProxyAgent = require('https-proxy-agent');
 const ProxyModel = require('../models/proxy.model')(DB, sequelize);
-const options_proxy = {type: 1};
+const options_proxy = {where: {type: 2}};
 
 exports.teamsMatches = async () => {
   try {
     let proxy = await ProxyModel.findOne(options_proxy);
     let agent = new HttpsProxyAgent('http://'+proxy.ip+':'+proxy.port);
-    let teams = await FounderTeamModel.findAll({where: {add: 1}, limit: 1});
-    let team = teams[0];
+    let team = await FounderTeamModel.findOne({where: {add: 1}, limit: 1});
     let statusUrl = 'https://www.hltv.org/stats/teams/matches/' + team.hltvId + '/' + team.name;
-    return request.get({url: statusUrl, agent: agent}, (err, res, result) => {
-      let $ = cheerio.load(result);
-      let item = {};
-      $("tbody").find('tr').map((i, e) => {
-        $(e).find('td').map((j, f) => {
-          if (j === 0) {
-            item.date = $(f).text();
-          }
-          if (j === 1) {
-            item.leagueName = $(f).text();
-            item.leagueId = $(f).find('a').attr('href').split('=')[1];
-            item.leagueLogo = $(f).find('img').attr('src');
-          }
-          if (j === 3) {
-            item.opponentName = $(f).text();
-            item.opponentId = $(f).find('a').attr('href').split('/')[3];
-            item.opponentFlag = $(f).find('img').attr('src');
-          }
-          if (j === 4) {
-            item.map = $(f).text();
-          }
-          if (j === 5) {
-            item.result = $(f).text();
-          }
-          if (j === 6) {
-            item.win = $(f).text();
-          }
-        })
-      });
-      if (!item.opponentId || !item.date) {
-        return null;
-      }
-      return TMHISTORIESModel.count({
-        where: {
-          teamId: team.hltvId,
-          opponentId: item.opponentId,
-          date: item.date,
-          map: item.map
+    return Q.fcall(() => {
+      return request.get({url: statusUrl}, (err, res, result) => {
+        let $ = cheerio.load(result);
+        let item = {};
+        $("tbody").find('tr').map((i, e) => {
+          $(e).find('td').map((j, f) => {
+            if (j === 0) {
+              item.date = $(f).text();
+            }
+            if (j === 1) {
+              item.leagueName = $(f).text();
+              item.leagueId = $(f).find('a').attr('href').split('=')[1];
+              item.leagueLogo = $(f).find('img').attr('src');
+            }
+            if (j === 3) {
+              item.opponentName = $(f).text();
+              item.opponentId = $(f).find('a').attr('href').split('/')[3];
+              item.opponentFlag = $(f).find('img').attr('src');
+            }
+            if (j === 4) {
+              item.map = $(f).text();
+            }
+            if (j === 5) {
+              item.result = $(f).text();
+            }
+            if (j === 6) {
+              item.win = $(f).text();
+            }
+          })
+        });
+        if (!item.opponentId || !item.date) {
+          return null;
         }
-      }).then((count) => {
-        if (count === 0) {
-          return TMHISTORIESModel.create({
+        return TMHISTORIESModel.count({
+          where: {
             teamId: team.hltvId,
             opponentId: item.opponentId,
-            opponentName: item.opponentName,
-            opponentFlag: item.opponentFlag,
-            leagueId: item.leagueId,
-            leagueName: item.leagueName,
-            leagueLogo: item.leagueLogo,
             date: item.date,
-            map: item.map,
-            win: item.win,
-            result: item.result
-          });
-        } else {
-          return TMHISTORIESModel.update({
-            teamId: team.hltvId,
-            opponentId: item.opponentId,
-            opponentName: item.opponentName,
-            opponentFlag: item.opponentFlag,
-            leagueId: item.leagueId,
-            leagueName: item.leagueName,
-            leagueLogo: item.leagueLogo,
-            date: item.date,
-            map: item.map,
-            win: item.win,
-            result: item.result
-          }, {
-            where: {
+            map: item.map
+          }
+        }).then((count) => {
+          if (count === 0) {
+            return TMHISTORIESModel.create({
               teamId: team.hltvId,
               opponentId: item.opponentId,
+              opponentName: item.opponentName,
+              opponentFlag: item.opponentFlag,
+              leagueId: item.leagueId,
+              leagueName: item.leagueName,
+              leagueLogo: item.leagueLogo,
               date: item.date,
-              map: item.map
-            }
-          }).then(() => {
-            return TeamModel.update({isUpdateMatch: true}, {
-              where: {
-                hltvId: team.hltvId
-              }
+              map: item.map,
+              win: item.win,
+              result: item.result
             });
-          }).then(() => {
-            return FounderTeamModel.update({add: 5}, {
+          } else {
+            return TMHISTORIESModel.update({
+              teamId: team.hltvId,
+              opponentId: item.opponentId,
+              opponentName: item.opponentName,
+              opponentFlag: item.opponentFlag,
+              leagueId: item.leagueId,
+              leagueName: item.leagueName,
+              leagueLogo: item.leagueLogo,
+              date: item.date,
+              map: item.map,
+              win: item.win,
+              result: item.result
+            }, {
               where: {
-                hltvId: team.hltvId
+                teamId: team.hltvId,
+                opponentId: item.opponentId,
+                date: item.date,
+                map: item.map
               }
+            }).then(() => {
+              return TeamModel.update({isUpdateMatch: true}, {
+                where: {
+                  hltvId: team.hltvId
+                }
+              });
+            }).then(() => {
+              return FounderTeamModel.update({add: 5}, {
+                where: {
+                  hltvId: team.hltvId
+                }
+              });
             });
-          });
-        }
+          }
+        })
       })
     }).then(() => {
       return team;
