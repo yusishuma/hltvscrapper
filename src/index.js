@@ -18,22 +18,18 @@ const app = require('./config/express');
 //     console.log('开始抓取matcheMaps');
 //     return matchesDetial.matcheMaps({
 //       add: 1,
-//       date: {'$lt': moment().valueOf() + 3600000},
+//       date: {'$gt': (moment().valueOf() - 0.5*3600000)/1000, '$lt': (moment().valueOf() + 3600000)/1000},
 //       result: {'$ne': 'Match over'},
-//     }, 6);
+//     }, 5);
 //   }).then(() => {
 //     console.log('开始抓取matcheMaps');
 //     setTimeout(() => {
 //       return matchesDetial.matcheMaps({
 //         add: 1,
-//         date: {'$gt': moment().valueOf() + 3600000},
+//         date: {'$gt': (moment().valueOf() + 3600000)/1000},
 //         result: {'$ne': 'Match over'},
-//       }, 6);
-//     }, vars.setTimeNum * 7);
-//   }).then(() => {
-//     setTimeout(() => {
-//       return matchesDetial.matchesMapStatus({add: 1});
-//     }, vars.setTimeNum * 15);
+//       }, 5);
+//     }, vars.setTimeNum * 8);
 //   });
 // });
 /**

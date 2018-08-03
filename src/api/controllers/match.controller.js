@@ -40,12 +40,11 @@ const options_proxy = {where: {type: 1}};
 //   }
 // };
 exports.matcheMaps = async (options, limit) => {
-  let count = await FounderMatchModel.count({attributes: ['hltvId'], where: options, limit: limit});
-  if (count === 0 && options.add === 1) {
-    options.add = 6;
-  } else if (count === 0 && options.add === 6) {
-    options.add = 1;
+  let count = await FounderMatchModel.count({attributes: ['hltvId'], where: options});
+  if (count === 0) {
+    await FounderMatchModel.update({add: 1}, {where: {add: 6, date: options.date, result: options.result}});
   }
+  console.log(options, '================count===',count);
   let founderMatches = await FounderMatchModel.findAll({attributes: ['hltvId'], where: options, limit: limit});
   var matchIds = _.map(founderMatches, function (item) {
     return item.hltvId.toString();
@@ -246,7 +245,6 @@ exports.matcheMaps = async (options, limit) => {
           });
           match.headToHead.push(data);
         });
-        let add = options.add === 1 ? 6 : 1;
         return MatchModel.update({
           hltvId: urlsData.hltvId,
           date: match.date.toString(),
@@ -267,8 +265,8 @@ exports.matcheMaps = async (options, limit) => {
           mapDetails: JSON.stringify(mapDetails),
           matchDescription: match.matchDescription
         }, {where: {hltvId: urlsData.hltvId}}).then(() => {
-          return FounderMatchModel.update({add: add}, {where: {hltvId: urlsData.hltvId}});
-        });
+          return FounderMatchModel.update({add: 6}, {where: {hltvId: urlsData.hltvId}});
+         });
       })
     }, vars.setTimeNum * index);
   }
