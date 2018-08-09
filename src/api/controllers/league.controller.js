@@ -5,8 +5,9 @@ const request = require('request');
 // const _ = require('lodash');
 const sequelize = require('sequelize');
 const DB = require('../../config/db').hltvDB;
-// const FDB = require('../../config/db').founderDB;
+const FDB = require('../../config/db').founderDB;
 const LeagueModel = require('../models/league.model')(DB, sequelize);
+const FounderLeagueModel = require('../models/founder.tournament.model')(FDB, sequelize);
 const vars = require('../../config/vars');
 const qlimit = require('qlimit')(10);
 const cheerio = require('cheerio');
@@ -15,13 +16,57 @@ const ProxyModel = require('../models/proxy.model')(DB, sequelize);
 const options_proxy = {where: {type: 2}};
 
 LeagueModel.sync({force: false});
-
+exports.getLeagueDetail = async () => {
+  try {
+    let founderLeague = await FounderLeagueModel.findOne({where: {add: 1}});
+    await FounderLeagueModel.update({add: 0}, {where: {hltvId: founderLeague.hltvId}});
+    let proxy = await ProxyModel.findOne(options_proxy);
+    let agent = new HttpsProxyAgent('http://' + proxy.ip + ':' + proxy.port);
+    await request
+      .get({
+        url: 'https://www.hltv.org/events/' + founderLeague.hltvId + '/' + founderLeague.name.toLowerCase().replace('#', "").replace(/ /g, "-"),
+        agent: agent
+      }, (err, res, leagueData) => {
+        let $ = cheerio.load(leagueData);
+        let league = {};
+        let teams = [];
+        $("table.info").find('td').map(function (i, e) {
+          if (i === 0) {
+            league.period = $(e).text()
+          }
+          if (i === 1) {
+            league.prizePool = $(e).text()
+          }
+          if (i === 2) {
+            league.teamsSum = $(e).text()
+          }
+          if (i === 3) {
+            league.location = $(e).text().replace(/[\r\n]/g, "").trim()
+          }
+        });
+        $("div.col").map(function (i, e) {
+          if ($(e).find('div.team-name').text() !== '') {
+            teams.push({name: $(e).find('div.team-name').text(), avatar: $(e).find('img.logo').attr('src')});
+          }
+        });
+        return LeagueModel.update({
+          period: league.period,
+          prizePool: league.prizePool,
+          teamsSum: league.teamsSum,
+          location: league.location,
+          teams: JSON.stringify(teams),
+        }, {where: {hltvId: founderLeague.hltvId}});
+      })
+  } catch (error) {
+    return error;
+  }
+};
 exports.leagues = async () => {
   try {
     let proxy = await ProxyModel.findOne(options_proxy);
-    let agent = new HttpsProxyAgent('http://'+proxy.ip+':'+proxy.port);
+    let agent = new HttpsProxyAgent('http://' + proxy.ip + ':' + proxy.port);
     await request
-      .get({url:'https://www.hltv.org/events#tab-ALL', agent: agent},(err, res, result) => {
+      .get({url: 'https://www.hltv.org/events#tab-ALL', agent: agent}, (err, res, result) => {
         let $ = cheerio.load(result);
         let data = [];
         $("a.a-reset.ongoing-event").map(function (i, e) {
@@ -63,7 +108,7 @@ exports.leagues = async () => {
             let item = data[index];
             let hltvId = item.url.split('/')[2];
             return request
-              .get({url:'https://www.hltv.org' + item.url, agent: agent},(err, res, leagueData) => {
+              .get({url: 'https://www.hltv.org' + item.url, agent: agent}, (err, res, leagueData) => {
                 let $ = cheerio.load(leagueData);
                 let league = {};
                 let teams = [];

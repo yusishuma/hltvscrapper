@@ -63,6 +63,13 @@ const app = require('./config/express');
 //               return team.teamsRanking(data);
 //             });
 //           }, 1000 * 15);
+//         }).then(() => {
+//           setTimeout(() => {
+//             return Q.fcall(function () {
+//               console.log('开始抓取getLeagueDetail');
+//               return league.getLeagueDetail();
+//             });
+//           }, 1000 * 20);
 //         });
 //       });
 //   });
@@ -74,7 +81,6 @@ const app = require('./config/express');
 //     return league.leagues();
 //   });
 // });
-
 // listen to requests
 app.listen(port, () => console.info(`server started on port ${port} (${env})`));
 
