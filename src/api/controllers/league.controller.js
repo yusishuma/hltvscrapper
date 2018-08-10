@@ -19,7 +19,10 @@ LeagueModel.sync({force: false});
 exports.getLeagueDetail = async () => {
   try {
     let founderLeague = await FounderLeagueModel.findOne({where: {add: 1}});
-    await FounderLeagueModel.update({add: 0}, {where: {hltvId: founderLeague.hltvId}});
+    if(!founderLeague){
+      await FounderLeagueModel.update({add: 1}, {where: {add: 6}});
+    }
+    await FounderLeagueModel.update({add: 6}, {where: {hltvId: founderLeague.hltvId}});
     let proxy = await ProxyModel.findOne(options_proxy);
     let agent = new HttpsProxyAgent('http://' + proxy.ip + ':' + proxy.port);
     await request
