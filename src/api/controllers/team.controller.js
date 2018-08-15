@@ -24,9 +24,14 @@ exports.teamsMatches = async () => {
     let proxy = await ProxyModel.findOne(options_proxy);
     let agent = new HttpsProxyAgent('http://'+proxy.ip+':'+proxy.port);
     let team = await FounderTeamModel.findOne({where: {add: 1}, limit: 1});
+    await FounderTeamModel.update({add: 5}, {
+      where: {
+        hltvId: team.hltvId
+      }
+    });
     let statusUrl = 'https://www.hltv.org/stats/teams/matches/' + team.hltvId + '/' + team.name;
     return Q.fcall(() => {
-      return request.get({url: statusUrl}, (err, res, result) => {
+      return request.get({url: statusUrl, agent: agent}, (err, res, result) => {
         let $ = cheerio.load(result);
         let item = {};
         $("tbody").find('tr').map((i, e) => {
@@ -100,18 +105,6 @@ exports.teamsMatches = async () => {
                 date: item.date,
                 map: item.map
               }
-            }).then(() => {
-              return TeamModel.update({isUpdateMatch: true}, {
-                where: {
-                  hltvId: team.hltvId
-                }
-              });
-            }).then(() => {
-              return FounderTeamModel.update({add: 5}, {
-                where: {
-                  hltvId: team.hltvId
-                }
-              });
             });
           }
         })
@@ -259,11 +252,14 @@ exports.teamsRanking = async (team) => {
           ranking = $(e).find('a').text();
         }
       });
-
+      let name = team.name;
+      if($('div.profile-team-name.text-ellipsis').text()!=''){
+        name = $('div.profile-team-name.text-ellipsis').text();
+      }
       return TeamModel.update({
         ranking: ranking,
         country: $('div.team-country').text(),
-        name: $('div.profile-team-name.text-ellipsis').text(),
+        name: name,
       }, {
         where: {
           hltvId: team.hltvId

@@ -11,6 +11,7 @@ const TeamModel = require('../models/team.model')(DB, sequelize);
 const MatchModel = require('../models/match.model')(DB, sequelize);
 const LeagueModel = require('../models/league.model')(DB, sequelize);
 const ProxyModel = require('../models/proxy.model')(DB, sequelize);
+const ESMatches = require('../models/esport_matches')(DB, sequelize);
 const Q = require('q');
 const qlimit = require('qlimit')(10);
 const cheerio = require('cheerio');
@@ -21,24 +22,57 @@ const HttpsProxyAgent = require('https-proxy-agent');
 TeamModel.sync({force: false});
 MatchModel.sync({force: false});
 ProxyModel.sync({force: false});
+ESMatches.sync({force: false});
 const options_proxy = {where: {type: 1}};
 
-// exports.updateProxy = async () => {
-//   try {
-//     request
-//       .get({url: 'http://webapi.http.zhimacangku.com/getip?num=1&type=1&pro=0&city=0&yys=0&port=1&pack=26094&ts=0&ys=0&cs=0&lb=1&sb=0&pb=4&mr=2&regions='}, (err, res, data) => {
-//         return ProxyModel.create({
-//           proxy: 'http://'+data.replace('\r\n',''),
-//         }).catch(function (result) {
-//           console.log(result);
-//         }).then(() => {
-//           ProxyModel.destroy({where: {proxy: {'$ne': 'http://'+data.replace('\r\n','')} }})
-//         });
-//       });
-//   } catch (error) {
-//     return error;
-//   }
-// };
+exports.update007Matches = async () => {
+  try {
+    await request
+      .get({url: 'http://api.esport007.com/api/schedule/latest?game_id=3'}, (err, res, data) => {
+        return Q.all(JSON.parse(data).data.details.map((match) => {
+          return ESMatches.findOne({where: {id: match.id}}).then((result) => {
+            if(!result){
+              match.team_a = JSON.stringify(match.team_a);
+              match.team_b = JSON.stringify(match.team_b);
+              return ESMatches.create(match).catch ((error) =>{
+                console.log(error);
+                return error;
+              });
+            }
+          });
+        }));
+      });
+    await  request
+      .get({url: 'http://api.esport007.com/api/schedule/latest_finish?game_id=3'}, (err, res, data) => {
+        return Q.all(JSON.parse(data).data.details.map((match) => {
+          // console.log(match);
+          return ESMatches.findOne({where: {id: match.id}}).then((result) => {
+            console.log(result);
+            if(!result){
+              match.team_a = JSON.stringify(match.team_a);
+              match.team_b = JSON.stringify(match.team_b);
+              match.last_moba_bo = JSON.stringify(match.last_moba_bo);
+              return ESMatches.create(match).catch ((error) =>{
+                console.log(error);
+                return error;
+              });
+            }
+            if(result){
+              match.team_a = JSON.stringify(match.team_a);
+              match.team_b = JSON.stringify(match.team_b);
+              match.last_moba_bo = JSON.stringify(match.last_moba_bo);
+              return ESMatches.update(match, {where:{id:match.id}}).catch ((error) =>{
+                console.log(error);
+                return error;
+              });
+            }
+          });
+        }));
+      });
+  } catch (error) {
+    return error;
+  }
+};
 exports.matcheMaps = async (options, limit) => {
   let count = await FounderMatchModel.count({attributes: ['hltvId'], where: options});
   if (count === 0) {

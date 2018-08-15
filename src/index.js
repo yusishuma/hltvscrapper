@@ -9,7 +9,7 @@ const app = require('./config/express');
 // const league = require('./api/controllers/league.controller');
 // const team = require('./api/controllers/team.controller');
 // const vars = require('./config/vars');
-
+// matchesDetial.update007Matches();
 // schedule.scheduleJob('*/3 * * * *', () => {
 //   Q.fcall(() => {
 //     console.log('开始抓取matches');
@@ -42,40 +42,35 @@ const app = require('./config/express');
 //     console.log('开始抓取teamsMatches');
 //     return team.teamsMatches()
 //       .then((data) => {
-//         return Q.fcall(function () {
 //           setTimeout(() => {
 //             return Q.fcall(function () {
 //               console.log('开始抓取teamsMapRates');
 //               return team.teamsMapRates(data);
 //             });
-//           }, 1000 * 5);
-//         }).then(() => {
+//           }, 1000 * 10);
 //           setTimeout(() => {
 //             return Q.fcall(function () {
 //               console.log('开始抓取teamsPlayers');
 //               return team.teamsPlayers(data);
 //             });
-//           }, 1000 * 10);
-//         }).then(() => {
+//           }, 1000 * 20);
 //           setTimeout(() => {
 //             return Q.fcall(function () {
 //               console.log('开始抓取teamsRanking');
 //               return team.teamsRanking(data);
 //             });
-//           }, 1000 * 15);
-//         }).then(() => {
+//           }, 1000 * 30);
 //           setTimeout(() => {
 //             return Q.fcall(function () {
 //               console.log('开始抓取getLeagueDetail');
 //               return league.getLeagueDetail();
 //             });
-//           }, 1000 * 20);
+//           }, 1000 * 40);
 //         });
-//       });
 //   });
 // });
-//
-// schedule.scheduleJob('0 0 6,18 * * ?', function () {
+
+// schedule.scheduleJob('0 0 6 * * ?', function () {
 //   return Q.fcall(function () {
 //     console.log('开始抓取leagues');
 //     return league.leagues();
