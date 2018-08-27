@@ -90,6 +90,9 @@ exports.matcheMaps = async (options, limit) => {
   for (let index = 0; index < urlsDatas.length; index++) {
     setTimeout(() => {
       let urlsData = urlsDatas[index];
+      if(!urlsData.matchDetialUrl){
+        urlsData.matchDetialUrl = '/matches/'+urlsData.hltvId+'/'+urlsData.team1Name.toLowerCase().replace('#', "").replace(/ /g, "-")+'-vs-'+urlsData.team2Name.toLowerCase().replace('#', "").replace(/ /g, "-")+urlsData.leagueName.toLowerCase().replace('#', "").replace(/ /g, "-")
+      }
       request.get({url: 'https://www.hltv.org' + urlsData.matchDetialUrl, agent: agent}, (err, res, data) => {
         let $ = cheerio.load(data);
         let mapBoDes = $("div.padding.preformatted-text").html();
