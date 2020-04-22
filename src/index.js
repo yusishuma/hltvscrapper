@@ -2,13 +2,13 @@
 Promise = require('bluebird'); // eslint-disable-line no-global-assign
 const {port, env} = require('./config/vars');
 const app = require('./config/express');
-// const schedule = require('node-schedule');
-// const Q = require('q');
-// const moment = require('moment');
-// const matchesDetial = require('./api/controllers/match.controller');
-// const league = require('./api/controllers/league.controller');
-// const team = require('./api/controllers/team.controller');
-// const vars = require('./config/vars');
+const schedule = require('node-schedule');
+const Q = require('q');
+const moment = require('moment');
+const matchesDetial = require('./api/controllers/match.controller');
+const league = require('./api/controllers/league.controller');
+const team = require('./api/controllers/team.controller');
+const vars = require('./config/vars');
 // matchesDetial.update007Matches();
 // schedule.scheduleJob('*/3 * * * *', () => {
 //   Q.fcall(() => {
@@ -79,6 +79,7 @@ const app = require('./config/express');
 // listen to requests
 app.listen(port, () => console.info(`server started on port ${port} (${env})`));
 
+team.test()
 /**
  * Exports express
  * @public

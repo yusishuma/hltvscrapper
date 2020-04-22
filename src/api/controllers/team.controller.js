@@ -271,3 +271,6 @@ exports.teamsRanking = async (team) => {
     return error;
   }
 };
+exports.test = async () => {
+
+}

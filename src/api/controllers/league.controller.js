@@ -72,7 +72,7 @@ exports.leagues = async () => {
       .get({url: 'https://www.hltv.org/events#tab-ALL', agent: agent}, (err, res, result) => {
         let $ = cheerio.load(result);
         let data = [];
-        $("a.a-reset.ongoing-event").map(function (i, e) {
+        $('div#ALL.tab-content').attr('id', 'ALL').find("a.a-reset.ongoing-event").map(function (i, e) {
           let itemData = {url: $(e).attr('href')};
           $(e).children('div').map(function (a, b) {
             itemData.avatar = $(b).find('img').attr('src');
@@ -82,6 +82,9 @@ exports.leagues = async () => {
           data.push(itemData);
         });
         $("div.events-month").find('a.a-reset.standard-box.big-event').map(function (i, e) {
+          if ($(e).find('div.big-event-name').text() === "") {
+            return ""
+          }
           data.push({
             url: $(e).attr('href'),
             avatar: $(e).find('img.event-header').attr('src'),
@@ -90,6 +93,9 @@ exports.leagues = async () => {
           });
         });
         $("div.events-month").find('a.a-reset.small-event.standard-box').map(function (i, e) {
+          if ($(e).find('div.big-event-name').text() === "") {
+            return ""
+          }
           data.push({
             url: $(e).attr('href'),
             avatar: $(e).find('img.event-header').attr('src'),
@@ -98,6 +104,9 @@ exports.leagues = async () => {
           });
         });
         $("div.events-month").find('a.a-reset.small-event.standard-box').map(function (i, e) {
+          if ($(e).find('img.logo').attr('title') === "") {
+            return ""
+          }
           data.push({
             url: $(e).attr('href'),
             avatar: $(e).find('img.logo').attr('src'),
@@ -131,7 +140,7 @@ exports.leagues = async () => {
                 });
                 $("div.col").map(function (i, e) {
                   if ($(e).find('div.team-name').text() !== '') {
-                    teams.push({name: $(e).find('div.team-name').text(), avatar: $(e).find('img.logo').attr('src')});
+                    teams.push({name: $(e).find('div.team-name').text().replace(/\\n                        /g, "").trim(), avatar: $(e).find('img.logo').attr('src')});
                   }
                 });
                 return LeagueModel.count({where: {hltvId: hltvId}}).then((count) => {
@@ -172,3 +181,4 @@ exports.leagues = async () => {
     return error;
   }
 };
+
