@@ -79,7 +79,6 @@ const vars = require('./config/vars');
 // listen to requests
 app.listen(port, () => console.info(`server started on port ${port} (${env})`));
 
-team.test()
 /**
  * Exports express
  * @public

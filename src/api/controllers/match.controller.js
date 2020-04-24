@@ -384,7 +384,7 @@ exports.matches = async () => {
     .get({url: 'https://www.hltv.org/matches', agent: agent}, (err, res, result) => {
       let $ = cheerio.load(result);
       let urlsDatas = [];
-      $("div.upcoming-matches").find('a.a-reset.block.upcoming-match.standard-box').map(function (i, e) {
+      $("div.upcoming-matches").find('a.a-reset').map(function (i, e) {
         if ($(e).attr("href").search(/matches\//) > 0) {
           let match = {
             matchDetialUrl: $(e).attr("href"),

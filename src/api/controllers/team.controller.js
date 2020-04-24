@@ -63,6 +63,7 @@ exports.teamsMatches = async () => {
         if (!item.opponentId || !item.date) {
           return null;
         }
+
         return TMHISTORIESModel.count({
           where: {
             teamId: team.hltvId,
@@ -181,7 +182,7 @@ exports.teamsPlayers = async (team) => {
       let currentItems = [];
       let historicItems = [];
       let standinsItems = [];
-      $('div.grid').map((i, e) => {
+      $('div.grid.reset-grid').map((i, e) => {
         if (i === 0) {
           $(e).find('div.col.teammate').map((j, f) => {
             if ($(f).text() !== '') {
@@ -271,6 +272,3 @@ exports.teamsRanking = async (team) => {
     return error;
   }
 };
-exports.test = async () => {
-
-}
