@@ -5,17 +5,18 @@ const request = require('request');
 // const _ = require('lodash');
 const sequelize = require('sequelize');
 const DB = require('../../config/db').hltvDB;
-const FDB = require('../../config/db').founderDB;
+const PDB = require('../../config/db').proxyDB;
 const LeagueModel = require('../models/league.model')(DB, sequelize);
-const FounderLeagueModel = require('../models/founder.tournament.model')(FDB, sequelize);
+const FounderLeagueModel = require('../models/founder.tournament.model')(DB, sequelize);
 const vars = require('../../config/vars');
 const qlimit = require('qlimit')(10);
 const cheerio = require('cheerio');
 const HttpsProxyAgent = require('https-proxy-agent');
-const ProxyModel = require('../models/proxy.model')(DB, sequelize);
+const ProxyModel = require('../models/proxy.model')(PDB, sequelize);
 const options_proxy = {where: {type: 2}};
 
 LeagueModel.sync({force: false});
+FounderLeagueModel.sync({force: false});
 exports.getLeagueDetail = async () => {
   try {
     let founderLeague = await FounderLeagueModel.findOne({where: {add: 1}});

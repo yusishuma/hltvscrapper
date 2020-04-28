@@ -5,7 +5,7 @@ const request = require('request');
 // const _ = require('lodash');
 const sequelize = require('sequelize');
 const DB = require('../../config/db').hltvDB;
-const FDB = require('../../config/db').founderDB;
+const PDB = require('../../config/db').proxyDB;
 const TeamModel = require('../models/team.model')(DB, sequelize);
 const TMHISTORIESModel = require('../models/tmhistroy.model')(DB, sequelize);
 const vars = require('../../config/vars');
@@ -13,11 +13,13 @@ const qlimit = require('qlimit')(10);
 const Q = require('q');
 const cheerio = require('cheerio');
 const moment = require('moment');
-const FounderTeamModel = require('../models/founder.team.model')(FDB, sequelize);
-TMHISTORIESModel.sync({force: false});
+const FounderTeamModel = require('../models/founder.team.model')(DB, sequelize);
 const HttpsProxyAgent = require('https-proxy-agent');
-const ProxyModel = require('../models/proxy.model')(DB, sequelize);
+const ProxyModel = require('../models/proxy.model')(PDB, sequelize);
 const options_proxy = {where: {type: 2}};
+
+FounderTeamModel.sync({force: false});
+TMHISTORIESModel.sync({force: false});
 
 exports.teamsMatches = async () => {
   try {
